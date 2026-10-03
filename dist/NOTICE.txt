@@ -1,0 +1,21 @@
+geo3d-motion-stage — binary data attribution
+
+BVH motion data: Perfume global site project #001
+https://perfume-global.com/web/2012/03/perfume-global-site-project-001/
+Input files: aachan.bvh, kashiyuka.bvh, nocchi.bvh
+
+The ROMs contain converted motion from those files, credited to the official primary project above. The project provided BVH and MP3; only BVH motion is used here. The official MP3 is not used or distributed.
+The official article describes an open-source project providing motion data
+for fan-created derivatives. This demo follows that fan-creation purpose.
+That description is not represented as a blanket license grant for BVH.
+
+The character meshes, viewer, converter and original PSG music were created
+for this project.
+
+Original song, WAV, BIOS and emulator binaries are not included.
+This is an independent, unofficial fan project, without endorsement.
+
+tools/machines/MOTIONGT.xml and tools/machines/MOTIONCB.xml derive from
+openMSX GPL-2.0 definitions. GPL-2.0 applies only to these two configuration
+files, not the application code or BVH motion data.
+See ../licenses/GPL-2.0.txt and ../THIRD_PARTY.md.

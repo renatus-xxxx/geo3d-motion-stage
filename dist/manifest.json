@@ -1,0 +1,40 @@
+{
+    "project":  "geo3d-motion-stage",
+    "rom_mapper":  "ASCII16-X",
+    "display":  "SCREEN 7 FIL, 512x424, 16 colors",
+    "minimum_ram_bytes":  65536,
+    "vram_bytes":  262144,
+    "required_extension":  "V9968 + geo3d",
+    "legacy_rom":  "MOTION.rom",
+    "native_rom":  "MOTION-native.rom",
+    "validation":  {
+                       "legacy":  "R800 and Z80 emulator",
+                       "native":  "current ROM: build only; earlier native ROM: blueMSX+ 2090cd2 visual boot/playback/white-ending check with field artifacts; controls/audio/CPU readback/reset and hardware untested"
+                   },
+    "bvh_source":  "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
+    "bvh_credit":  "Perfume global site project #001",
+    "bvh_use_basis":  "fan-created derivative demo following the official project description",
+    "bvh_official_project":  "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
+    "files":  [
+                  {
+                      "file":  "MOTION.rom",
+                      "bytes":  8388608,
+                      "sha256":  "b82324d940b2b0a5cc74cf804625a4f68d5521b5a59b1d5bb8e2900871c52d17"
+                  },
+                  {
+                      "file":  "MOTION-native.rom",
+                      "bytes":  8388608,
+                      "sha256":  "c5ce2e25c22bac28a91a0a81a803e4c01c5fd4cfeb5be27aad1769c20d640448"
+                  },
+                  {
+                      "file":  "motion-stage-demo.mp4",
+                      "bytes":  3011612,
+                      "sha256":  "344f9e7061557d2a52f4b5622f1657e898b958f47a02eb9f76a678200d98d7c5"
+                  },
+                  {
+                      "file":  "NOTICE.txt",
+                      "bytes":  1135,
+                      "sha256":  "6597d5e96927a5eeed7dec3a29a301b4c6cd757413cbca2c457d85eebe4ce0ad"
+                  }
+              ]
+}

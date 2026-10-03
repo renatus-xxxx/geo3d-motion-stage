@@ -1,0 +1,21 @@
+build/
+runtime/
+emulator/
+assets/*.bvh
+output/
+*.o
+*.lis
+*.map
+
+.claude/
+.codex/
+.env
+.env.*
+*.log
+*.avi
+.DS_Store
+.vscode/
+.idea/
+
+# Distribute technical slides as PDF only.
+*.pptx

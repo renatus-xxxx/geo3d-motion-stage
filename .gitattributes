@@ -1,0 +1,14 @@
+* text=auto
+*.bat text eol=crlf
+*.c text eol=lf
+*.h text eol=lf
+*.cs text eol=lf
+*.ps1 text eol=crlf
+*.md text eol=lf
+*.png binary
+*.gif binary
+*.rom binary
+*.mp4 binary
+SHA256SUMS.txt text eol=lf
+NOTICE.txt text eol=lf
+*.pdf binary
