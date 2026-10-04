@@ -2,75 +2,67 @@
 
 # geo3d-motion-stage
 
+**V9968 + geo3d搭載MSX向けの、カートリッジから起動する3Dダンスデモ**です。3人の低ポリゴン人物を **SCREEN 7 FIL・512×424・16色**で描き、過去姿勢、床への映り込み、独自PSG音楽を再生します。
 
-**V9968 + geo3dを搭載したMSX向けの3Dダンスデモ**です。3人の低ポリゴン人物がBVHモーションを踊ります。**SCREEN 7 FIL・512×424・16色**で、過去姿勢の残像、床への映り込み、オリジナルPSG BGMを表示・再生します。
+![R800エミュレータのプレビュー](preview.gif)
 
-![R800エミュレータでのアニメーションプレビュー](preview.gif)
+起動後は無操作でデモを開始します。表示効果、人物選択、カメラ移動が同じ時間軸で進み、アプリ内のホワイトアウトと音楽フェードの後、自動で繰り返します。途中から手動操作もできます。
 
 ## ダウンロード
 
-ビルド済みROMで試す場合、コンパイラは不要です。
+| ROM | モーション／マッパー | FIL実装 |
+|---|---|---|
+| [MOTION8.ROM](dist/MOTION8.ROM) | 8 MiB・20 Hz・ASCII16-X | 検証用V9968 openMSX、R21 bit6 |
+| [MOT8N.ROM](dist/MOT8N.ROM) | 8 MiB・20 Hz・ASCII16-X | native、R20 bit5 |
+| [MOTION2.ROM](dist/MOTION2.ROM) | 2 MiB・10 Hz・ASCII16 | 検証用V9968 openMSX、R21 bit6 |
+| [MOT2N.ROM](dist/MOT2N.ROM) | 2 MiB・10 Hz・ASCII16 | native、R20 bit5 |
 
-| ダウンロード | 対象 |
-|---|---|
-| [MOTION.rom](dist/MOTION.rom) | FILが**R21 bit6**の旧V9968 openMSX実装。R800・Z80で検証済み |
-| [MOTION-native.rom](dist/MOTION-native.rom) | FILが**R20 bit5**の現行FPGA仕様。ビルド確認のみ、実機未検証 |
-| [デモ動画](dist/motion-stage-demo.mp4) | 英語字幕・BGM付き、42秒のR800録画 |
+ROM名は全て8.3形式です。**Nはnative FILの意味で、CPUの種類ではありません。** 各ROMがR800とZ80の両方に対応します。8 MiB版は従来の20 Hzの全姿勢を維持します。2 MiB版は1姿勢おきに保存し、座標と法線は16 bitの値を維持します。再生時間は短くなりません。
 
-両ROMとも**8MiB・ASCII16-X**です。**V9968・256KB VRAM・geo3d・64KB以上のメインRAM**が必要です。標準V9958だけのMSX2+や未改造のopenMSXでは動きません。R800を推奨します。Z80でも動作しますが描画速度は低くなります。
+必要環境は **V9968 + geo3d・VRAM 256 KiB・主RAM 64 KiB以上**です。標準V9958だけでは動きません。R800を推奨し、Z80は効果併用時に低速です。アプリは60 Hzを明示的に選択します。native FILとFPGA実機の検証範囲は[検証結果](VERIFICATION.ja.md)で区別しています。
 
-詳しくは[配布バイナリとチェックサム](dist/README.ja.md)を参照してください。BIOS・エミュレータ本体は含みません。
-
-## 技術解説
-
-[日本語 PDF](docs/geo3d-motion-stage-technical-guide.ja.pdf) | [English PDF](docs/geo3d-motion-stage-technical-guide.en.pdf)
-
-BVHの関節階層、bake、低ポリゴン形状の生成、ASCII16-XのROMバンク、geo3d描画を説明する全22枚の図解スライドです。コード引用とともに、カメラの透視投影、過去姿勢の残像、床への映り込み、SCREEN 7 FILの2つの設定経路を解説します。
+[全編デモ動画](dist/motion-stage-demo.mp4) · [R800比較](dist/comparison-r800.mp4) · [Z80比較](dist/comparison-z80.mp4) · [配布物とチェックサム](dist/README.ja.md)
 
 ## Windowsで起動
 
-ASCII16-Xと上記の旧FIL仕様に対応したWindows版[V9968 + geo3d openMSX](https://github.com/alexmoncks/openMSX)、使用する機種のBIOSを用意してください。
+R21 bit6のFILを実装したWindows版[V9968 + geo3d openMSX](https://github.com/alexmoncks/openMSX)と機種のBIOSを用意してください。エミュレータ・BIOS本体は配布しません。
 
-1. このリポジトリをCloneまたはダウンロードします。
-2. `openmsx.exe`と`share`を含むディレクトリを指定してセットアップします。
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -EmulatorRoot C:\Tools\openMSX-V9968 -SystemROMs C:\MSX\systemroms -CBIOS C:\MSX\cbios
+```
 
-   ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -EmulatorRoot C:\Tools\openMSX-V9968 -SystemROMs C:\MSX\systemroms -CBIOS C:\MSX\cbios
-   ```
+パスは例です。[実行環境](docs/RUNTIME.ja.md)に必要なBIOSファイルを記載しています。
 
-   パスは例です。turboR用に`-SystemROMs`、C-BIOS用に`-CBIOS`を指定します。[必要ファイル一覧](docs/RUNTIME.ja.md)も参照してください。
-3. **FS-A1GT / R800**は`run-turbor.bat`、**MSX2+ / C-BIOS / Z80**は`run-msx2plus-cbios.bat`で起動します。`run.bat`はR800を選びます。
+```bat
+run-turbor.bat 8m
+run-turbor.bat 2m
+run-msx2plus-cbios.bat 8m
+run-msx2plus-cbios.bat 2m
+```
 
-起動batはローカルのビルドがあればそれを使い、なければ`dist/MOTION.rom`を使います。ディスク、BASICコマンド、セーブ状態は不要です。
+容量を省略すると8 MiBを選びます。ローカルビルドがあればそれを使い、なければ`dist`のROMを使用します。BASICコマンド、ディスク、セーブ状態は不要です。これらのbatはopenMSX用FIL版を選びます。native版はR20 bit5に対応するエミュレータまたはFPGAで使用してください。
 
 ## 操作
 
 | キー | 操作 |
 |---|---|
-| 左右 | カメラを左右に回転、最大±45度 |
-| 上下 | 床の上から見下ろす範囲でカメラを上下に回転 |
-| Shift＋上下 | 人物が画面に収まる範囲でズーム |
-| **T** — Trails | 2段階の過去姿勢を表示／非表示 |
-| **R** — Reflection | 床への映り込みを表示／非表示 |
-| **C** — Character | 全員→aachan→kashiyuka→nocchi→全員 |
-| **M** — Music | BGMのミュート／解除 |
+| **D — Demo** | 自動デモを最初から開始 |
+| 左右 | カメラ回転、最大±45度 |
+| 上下 | カメラの上下方向の回転 |
+| Shift＋上下 | 自動フィットの範囲でズーム |
+| **T — Trails** | 過去姿勢を表示／非表示 |
+| **R — Reflection** | 床への映り込みを表示／非表示 |
+| **C — Character** | 全員→aachan→kashiyuka→nocchi→全員 |
+| **M — Music** | デモを継続したままミュート／解除 |
 | Space | 一時停止／再開 |
-| **E** — End | 終端演出を早く開始 |
-| Esc | モーション・音楽を再開始し、カメラを初期化 |
+| **E — End** | 終了演出を早く開始 |
+| Esc | 現在のモードを、初期カメラ・効果で再開始 |
 
-初期状態は全員表示、残像・映り込みOFFです。約**70.5秒**でアプリ自身が白へフェードし、BGMも減衰・停止します。白画面を保持するので、Escで再開始してください。
+カメラ、T/R/C、Space、Eの操作で、現在の場面を維持して手動モードへ移ります。手動モードの終了後は白画面を保持し、EscかDで再開します。自動モードは約70.5秒のモーションと1秒の白画面の後に繰り返します。次の最初の画面を描く時間だけ、CPUに応じた短い待ちが加わります。ミュート設定は自動ループでも保持します。
 
-## モーションデータの出典
+## ビルド
 
-**BVHモーションデータ：[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)。**
-
-公式の一次配布元である **Perfume global site project #001** が提供したBVHモーションを変換してROMに収録しています。出典は上記の公式ページです。同プロジェクトではBVHとMP3が提供されていますが、このデモで使用するのはBVHのみです。人体メッシュ、MSXビューアー、PSG BGMは新規制作で、公式MP3は使用・配布しません。独立した非公式デモです。
-
-[公式記事](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)が説明する、モーションデータを用いたファンの二次創作として制作・配布します。この記事をBVHへの包括的なライセンス付与とは扱いません。データと新規コードの区別は[第三者資料](THIRD_PARTY.ja.md)を参照してください。
-
-## ソースからビルド
-
-Windowsの**z88dk**、Windows PowerShell、.NET Frameworkを使います。Python・WSLは不要です。
+Windowsのz88dk、Windows PowerShell、.NET Frameworkを使用します。通常のビルド・起動にPython・WSLは不要です。
 
 ```bat
 set Z88DK=C:\z88dk
@@ -78,43 +70,36 @@ build.bat
 build-native.bat
 ```
 
-`build.bat`は`build/MOTION.rom`、`build-native.bat`は別のnative-FIL版を生成します。ビルド前に公式プロジェクトの`aachan.bvh`、`kashiyuka.bvh`、`nocchi.bvh`を`assets/`へ配置してください。SHA-256で照合し、オフラインでビルドします。二次配布リポジトリからの自動取得は行いません。リンク先の公式記事は一次プロジェクトの紹介ページで、BVHへの直接ダウンロードURLではありません。
+それぞれ両容量を生成します。片方だけなら`build.bat 2m`や`build-native.bat 8m`を使います。出力は`build`以下の上記4ファイルです。容量とFIL方式は独立して選び、Cソースは共通です。2 MiB版はASCII16-Xの拡張アドレスを使わず、標準ASCII16のバンク書き込みを使用します。
 
-動画・GIFの再生成だけFFmpegが必要です。通常のビルドと起動には不要です。[メディア生成手順](docs/MEDIA.ja.md)を参照してください。
+公式プロジェクトの`aachan.bvh`、`kashiyuka.bvh`、`nocchi.bvh`を`assets`へ置いてください。SHA-256をオフラインで検査します。元のbakeはキャッシュします。BVHや`BvhBake.cs`を変更した場合は再変換してください。
 
-## 性能と技術情報
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\build-rom.ps1 -Profile all -Rebake
+```
 
-| 表示 | R800 | Z80 |
-|---|---:|---:|
-| 3人・効果OFF | 約15 FPS | 約4 FPS |
-| 1人・効果OFF | 約15 FPS | 約4.6 FPS |
-| 3人・残像＋反射 | 約6 FPS | 約1.3 FPS |
+その後native版も再ビルドします。二次配布リポジトリから自動取得しません。メディア再生成だけFFmpegが必要です。[メディア生成](docs/MEDIA.ja.md)を参照してください。
 
-エミュレータの測定値で、実機の値ではありません。姿勢は20Hzで、描画が遅い場合は姿勢を間引き、踊り自体を遅くしません。FILはインターレースなので、動く輪郭にフィールド差が出る場合があります。native-FIL版の実機動作は未検証です。
+## SX-2と小容量ROM機器
 
-固定長バッファ、整数・固定小数点演算、ROMバンク切り替えを使用しています。1人60頂点・72三角形で、geo3dが変換、陰影、面の並び替え、塗りつぶしを担当します。
+2 MiB版は**標準ASCII16**を使用し、データのバンク番号を128未満に収めています。SX-2系OCMファームウェアのASCII-16K ESE-MegaRAMモードを想定しています。ローダーでASCII16と適切なESE-MegaRAM機器を選択してください。V9968 + geo3dも必要で、標準SX-2のVDPだけでは不足します。個別のSX-2ローダー・ファームウェアと実機動作は未検証です。
 
-- [構成・データ形式](docs/DESIGN.ja.md)
-- [検証結果と制約](VERIFICATION.ja.md)
+一次資料の[OCM-PLD更新履歴](https://github.com/gnogni/ocm-pld-dev/blob/master/history.txt)に、SX-2対応とESE-MegaRAM ASCII-16Kの記載があります。8 MiB版は引き続き[ASCII16-X](https://www.grauw.nl/projects/ascii-x/ascii16-x/)を必要とします。
 
-## 第三者資料の表記
+## モーションの出典
 
-[tools/machines/MOTIONGT.xml](tools/machines/MOTIONGT.xml)と[tools/machines/MOTIONCB.xml](tools/machines/MOTIONCB.xml)はopenMSXの機種定義から派生しているため、[GPL-2.0](licenses/GPL-2.0.txt)を維持します。この表記は2つの設定ファイルだけに適用し、アプリのコードやBVHモーションには適用しません。BVHの出典と利用方針は[第三者資料](THIRD_PARTY.ja.md)を参照してください。
+**BVHモーション：[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)。**
 
-### ビルド版の使い分け
+公式の一次プロジェクトが提供したBVHを変換してROMへ収録しています。同プロジェクトはBVHとMP3を提供しましたが、このデモはBVHのみを使用します。人体メッシュ、MSXビューアー、PSG音楽は新規制作です。公式MP3は使用・配布しません。独立した非公式ファンデモです。
 
-| スクリプト | 出力 | FILの実装 |
-|---|---|---|
-| `build.bat`（通常設定） | `build/MOTION.rom` | 検証済みgeo3d版openMSX向け。R21 bit6を使用し、VRAMコピーで画面を表示 |
-| `build-native.bat` | `build/MOTION-native.rom` | 現行V9968 FPGAの設定に対応。R20 bit5を使用し、表示ページを切り替え |
+公式記事で説明される、モーションを用いたファンの二次創作として制作しています。記事を包括的なオープンソースライセンスとは扱いません。[第三者資料](THIRD_PARTY.ja.md)に区別を記載しています。
 
-両方ともモーション・操作・BGMは共通で、8MB ASCII16-X ROMです。nativeはR800専用という意味ではありません。付属の起動batは`MOTION.rom`を選択します。
+## 技術資料
 
-`build-native.bat`は既存の変換済みモーションを再利用します。BVHや変換処理を変更した場合は、先に`build.bat`、続けて`build-native.bat`を実行してください。`build.bat`は常に通常版を作ります。native版は`build-native.bat`を使用してください。
+- [現行ROMの配置・デモ時計・描画](docs/DESIGN.ja.md)
+- [検証結果・測定性能](VERIFICATION.ja.md)
+- [初期版の技術解説・日本語PDF](docs/geo3d-motion-stage-technical-guide.ja.pdf)／[English PDF](docs/geo3d-motion-stage-technical-guide.en.pdf)
 
-現行の[blueMSX+ V9968 + geo3dブランチ](https://github.com/Hesoten/blueMSX-plus/tree/experimental/v9968-geo3d)もFILにR20 bit5を使用します。2026-10-03に、指定の **v3.1.1 experimental V9968 + geo3d版 `2090cd2`** と`MOTION-native.rom`で検証しました。FS-A1GT BIOS・V9968/256KB VRAM・ASCII16-X・速度100%で、コールドブート、人物のアニメーション、床の描画、自動再生、最後の白画面を確認しました。動く輪郭にはインターレースのフィールド差らしい縞が見える場合があり、滑らかなフレームも確認しています。描画が常に完全であるという検証ではありません。Windows入力操作ランタイムが初期化できなかったため、キー操作・効果切り替え・音声・CPUモードの読み取り・リセットは今回未検証です。FPGA実機も未検証です。geo3dを含まない通常版は対象外です。
+初期版PDFのデータ形式は、今回追加した事前計算の境界情報と2 MiB形式を含みません。現在のサイズとコードはDESIGNを参照してください。
 
-
-上記のblueMSX+表示確認は、修正前のnative ROM（SHA-256 `b3ad44a7fee37fed948f5ab5d5407b4bc04f8c352ca005b168ab106bb302b26e`）の結果です。今回のレビュー修正版native ROMは再ビルド済みですが、blueMSX+での表示再確認と実機検証は未実施です。
-
-性能表は公開前の機能検証時の測定値です。今回の最終レビュー修正版を同一条件で再測定した表ではなく、性能の目安として掲載しています。
+機種定義の[MOTIONGT.xml](tools/machines/MOTIONGT.xml)と[MOTIONCB.xml](tools/machines/MOTIONCB.xml)だけに、元資料の[GPL-2.0](licenses/GPL-2.0.txt)表記を維持しています。アプリの新規コードやBVHにこの表記を適用せず、プロジェクト全体のMIT/GPLライセンスは表明していません。

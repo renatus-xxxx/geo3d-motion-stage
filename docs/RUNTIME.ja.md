@@ -2,7 +2,7 @@
 
 # 実行環境の準備
 
-ROMにはV9968・geo3d・ASCII16-X対応が必要です。**公式の未改造openMSXや標準V9958だけでは動作しません。** 検証用エミュレータは[alexmoncks/openMSX](https://github.com/alexmoncks/openMSX)の派生版です。`dist/MOTION.rom`にはFILをR21 bit6で実装したWindows版を使用します。
+ROMにはV9968・geo3d・ASCII16-X対応が必要です。**公式の未改造openMSXや標準V9958だけでは動作しません。** 検証用エミュレータは[alexmoncks/openMSX](https://github.com/alexmoncks/openMSX)の派生版です。`dist/MOTION8.ROM`にはFILをR21 bit6で実装したWindows版を使用します。
 
 エミュレータ、BIOS、未変換BVHは配布しません。`tools/machines`の2つのGPL-2.0機種定義は[openMSXの機種定義](https://github.com/openMSX/openMSX/tree/RELEASE_21_0/share/machines)から派生しています。
 
@@ -36,13 +36,17 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -Emu
 - `run-msx2plus-cbios.bat`：MOTIONCB / Z80を選択。
 - `run.bat`：標準ではMOTIONGTを選択。
 
-`build/MOTION.rom`があれば使用し、なければ`dist/MOTION.rom`を使用します。配布ROMの実行にはz88dkやBVHの取得は不要です。ディスクやセーブ状態を接続しません。
+`build/MOTION8.ROM`があれば使用し、なければ`dist/MOTION8.ROM`を使用します。配布ROMの実行にはz88dkやBVHの取得は不要です。ディスクやセーブ状態を接続しません。
 
 ## native FIL版
 
-`dist/MOTION-native.rom`は現行FPGAのFIL設定R20 bit5と表示ページ切り替えに対応します。上記の旧FILエミュレータ向けではありません。blueMSX+ 2090cd2では起動・自動再生・白画面終了を限定的に確認しましたが、動く輪郭のフィールド差も観測しています。操作、音声、CPUモード読み取り、リセットは同環境では未確認です。実機での動作と性能は未検証です。
+`dist/MOT8N.ROM`は現行FPGAのFIL設定R20 bit5と表示ページ切り替えに対応します。上記の旧FILエミュレータ向けではありません。blueMSX+ 2090cd2では起動・自動再生・白画面終了を限定的に確認しましたが、動く輪郭のフィールド差も観測しています。操作、音声、CPUモード読み取り、リセットは同環境では未確認です。実機での動作と性能は未検証です。
 
 検証した旧FIL版openMSXの実行ファイルはバージョン`21.0-unknown`、SHA-256 `140c7a8cdbffda42488e7cf8fedcc2fd735a01bc68ac891d93f8b96db337c7bd`です。正確なソースリビジョンとビルド日は記録がないため、参照リンクから同じバイナリを再現できると保証するものではありません。
 
 
 上記のblueMSX+表示確認は、修正前のnative ROM（SHA-256 `b3ad44a7fee37fed948f5ab5d5407b4bc04f8c352ca005b168ab106bb302b26e`）の結果です。今回のレビュー修正版native ROMは再ビルド済みですが、blueMSX+での表示再確認と実機検証は未実施です。
+
+## 容量の選択
+
+起動batに 2m を指定すると MOTION2.ROM と標準ASCII16を選びます。省略時は MOTION8.ROM とASCII16-Xです。例：un-msx2plus-cbios.bat 2m。nativeの2 MiB版は MOT2N.ROM です。2 MiB版の自動マッパー判別は検証用openMSXで起動せず、ASCII16を明示してください。SX-2では対応ESE-MegaRAMをローダーで選び、V9968 + geo3dも必要です。実機は未検証です。

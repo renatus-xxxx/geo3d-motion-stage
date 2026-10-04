@@ -1,21 +1,18 @@
 [English](README.md) | [日本語](README.ja.md)
 
-# ビルド済みバイナリ
+# ビルド済みROMと動画
 
-| ファイル | 対象 | 検証 |
-|---|---|---|
-| [MOTION.rom](MOTION.rom) | 旧FILのV9968版openMSX：R21 bit6 | R800/Z80で再生、操作、終了、リセットを確認 |
-| [MOTION-native.rom](MOTION-native.rom) | 現行FPGA設定：R20 bit5 | ビルド、blueMSX+ 2090cd2で起動・再生・白画面終了を確認。フィールド差を観測。操作・音声・実機は未検証 |
-| [motion-stage-demo.mp4](motion-stage-demo.mp4) | 42秒のデモ | PSG音声とアプリ自身の終了演出を含むR800録画 |
+| ファイル | 容量／モーション | マッパー | FIL |
+|---|---|---|---|
+| [MOTION8.ROM](MOTION8.ROM) | 8 MiB／20 Hz | ASCII16-X | R21 bit6 |
+| [MOT8N.ROM](MOT8N.ROM) | 8 MiB／20 Hz | ASCII16-X | native R20 bit5 |
+| [MOTION2.ROM](MOTION2.ROM) | 2 MiB／10 Hz | ASCII16 | R21 bit6 |
+| [MOT2N.ROM](MOT2N.ROM) | 2 MiB／10 Hz | ASCII16 | native R20 bit5 |
 
-両ROMは**8,388,608バイト・ASCII16-X**で、**256KB VRAMのV9968 + geo3d + 最低64KBメインRAM**が必要です。標準V9958だけのMSX向けではありません。
+Nはnative FILです。全ROMがR800／Z80に対応し、自動デモを繰り返します。両容量とも16 bit法線の値を維持します。必要環境はV9968 + geo3d、VRAM 256 KiB、主RAM 64 KiB、60 Hzです。標準V9958だけでは不足します。2 MiBはASCII16を明示してください。検証環境の自動マッパー判別には対応していません。SX-2／FPGA実機は未検証です。
 
-起動スクリプトは旧FIL版を選択します。[実行環境](../docs/RUNTIME.ja.md)を準備してください。BIOS・エミュレータは配布しません。[SHA256SUMS.txt](SHA256SUMS.txt)にチェックサム、[manifest.json](manifest.json)に容量と検証範囲を記載します。
+[全編デモ](motion-stage-demo.mp4) · [R800左右比較](comparison-r800.mp4) · [Z80左右比較](comparison-z80.mp4)
 
-## データの出典
+[チェックサム](SHA256SUMS.txt)と[マニフェスト](manifest.json)で配布ファイルを識別します。[検証](../VERIFICATION.ja.md)、[操作](../README.ja.md#操作)、[実行環境](../docs/RUNTIME.ja.md)を参照してください。native版のビルドと実行検証は区別して記載しています。BIOS・エミュレータは含みません。
 
-BVHモーション：**[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)**。
-
-ROMには`aachan.bvh`、`kashiyuka.bvh`、`nocchi.bvh`から変換した関節モーションを収録します。公式プロジェクトはBVHとMP3を提供していますが、このデモはBVHのみ使用し、公式MP3、元楽曲、WAV、BIOS、エミュレータは含みません。独立した非公式デモです。[NOTICE.txt](NOTICE.txt)と[第三者資料](../THIRD_PARTY.ja.md)も参照してください。公式プロジェクトが説明するファンの二次創作として利用し、モーションデータの利用方針は機種設定XMLの表記とは区別します。
-
-上記のblueMSX+表示確認は、修正前のnative ROM（SHA-256 `b3ad44a7fee37fed948f5ab5d5407b4bc04f8c352ca005b168ab106bb302b26e`）の結果です。今回のレビュー修正版native ROMは再ビルド済みですが、blueMSX+での表示再確認と実機検証は未実施です。
+BVHモーション：**[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)**。公式BVHを変換して収録し、公式MP3は使用せず、PSG音楽は独自制作です。[NOTICE](NOTICE.txt)と[第三者資料](../THIRD_PARTY.ja.md)を参照してください。プロジェクト全体のMIT／GPLは表明せず、GPLは2つの機種XMLだけに適用します。

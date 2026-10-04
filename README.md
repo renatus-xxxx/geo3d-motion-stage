@@ -2,75 +2,67 @@
 
 # geo3d-motion-stage
 
+A cartridge-native 3D dance demo for **MSX with V9968 + geo3d**. Three low-polygon figures perform BVH motion in **SCREEN 7 FIL, 512×424, 16 colors**, with trails, floor reflection and original PSG music.
 
-A cartridge-based 3D dance demo for **MSX with V9968 + geo3d**. Three low-poly dancers perform BVH motion in **SCREEN 7 FIL, 512×424, 16 colors**, with optional motion trails, floor reflections and an original PSG soundtrack.
+![R800 emulator preview](preview.gif)
 
-![Animated preview from the R800 emulator](preview.gif)
+The ROM starts a demonstration automatically: effects, individual characters and camera movement follow a shared timeline. The application fades to white and fades its music, then starts again without input. You can take control at any point.
 
 ## Download
 
-No compiler is needed to try the prebuilt ROMs.
+| ROM | Motion / mapper | FIL implementation |
+|---|---|---|
+| [MOTION8.ROM](dist/MOTION8.ROM) | 8 MiB, 20 Hz, ASCII16-X | Bundled V9968 openMSX, R21 bit 6 |
+| [MOT8N.ROM](dist/MOT8N.ROM) | 8 MiB, 20 Hz, ASCII16-X | Native, R20 bit 5 |
+| [MOTION2.ROM](dist/MOTION2.ROM) | 2 MiB, 10 Hz, ASCII16 | Bundled V9968 openMSX, R21 bit 6 |
+| [MOT2N.ROM](dist/MOT2N.ROM) | 2 MiB, 10 Hz, ASCII16 | Native, R20 bit 5 |
 
-| Download | Choose this for |
-|---|---|
-| [MOTION.rom](dist/MOTION.rom) | The legacy V9968 openMSX implementation with FIL at **R21 bit 6**; tested on R800 and Z80 |
-| [MOTION-native.rom](dist/MOTION-native.rom) | Current FPGA register layout with FIL at **R20 bit 5**; build verified, hardware operation untested |
-| [Demo video](dist/motion-stage-demo.mp4) | A 42-second R800 recording with sound and English feature captions |
+All ROM names use 8.3 format. **N means native FIL, not a CPU type.** Each ROM supports both R800 and Z80. The 8 MiB version preserves every original 20 Hz pose. The 2 MiB version retains every second pose and exact 16-bit coordinates/normals; it does not shorten playback.
 
-Both ROMs are **8 MiB ASCII16-X** cartridges. They need **V9968 with 256KB VRAM, geo3d and at least 64KB main RAM**. Standard MSX2+/V9958 hardware or an unmodified openMSX build is insufficient. R800 gives smoother playback; Z80 support has lower frame rates.
+Required: **V9968 + geo3d, 256 KiB VRAM and at least 64 KiB main RAM**. A standard V9958 alone is insufficient. R800 is recommended; Z80 is substantially slower with effects. The application explicitly selects 60 Hz. Native-FIL and physical FPGA validation are documented separately in [verification](VERIFICATION.md).
 
-See [binary notes and checksums](dist/README.md) for details. BIOS and emulator binaries are not included.
+[Full demo video](dist/motion-stage-demo.mp4) · [R800 comparison](dist/comparison-r800.mp4) · [Z80 comparison](dist/comparison-z80.mp4) · [Checksums and distribution](dist/README.md)
 
-## Technical guide
+## Windows launch
 
-[English PDF](docs/geo3d-motion-stage-technical-guide.en.pdf) | [日本語 PDF](docs/geo3d-motion-stage-technical-guide.ja.pdf)
+Prepare a Windows [V9968 + geo3d openMSX](https://github.com/alexmoncks/openMSX) build with the R21 bit 6 FIL implementation and the BIOS files for your machine. BIOS and emulator binaries are not distributed.
 
-An illustrated 22-slide guide explains BVH joint hierarchies, baking, low-poly mesh generation, ASCII16-X ROM banks and geo3d rendering. It includes code excerpts, camera projection, motion trails, floor reflections and the two SCREEN 7 FIL backends.
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -EmulatorRoot C:\Tools\openMSX-V9968 -SystemROMs C:\MSX\systemroms -CBIOS C:\MSX\cbios
+```
 
-## Run on Windows
+Paths are examples. See [runtime setup](docs/RUNTIME.md) for required BIOS files.
 
-Use a Windows [V9968 + geo3d openMSX build](https://github.com/alexmoncks/openMSX) that supports ASCII16-X and the legacy FIL layout described above. Prepare the BIOS files for the machine you want to use.
+```bat
+run-turbor.bat 8m
+run-turbor.bat 2m
+run-msx2plus-cbios.bat 8m
+run-msx2plus-cbios.bat 2m
+```
 
-1. Clone or download this repository.
-2. Run the setup helper with the directory containing `openmsx.exe` and `share`:
-
-   ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -EmulatorRoot C:\Tools\openMSX-V9968 -SystemROMs C:\MSX\systemroms -CBIOS C:\MSX\cbios
-   ```
-
-   The paths above are examples. `-SystemROMs` is needed for turboR; `-CBIOS` is needed for the C-BIOS machine. See [runtime setup](docs/RUNTIME.md) for file names.
-3. Start `run-turbor.bat` for **FS-A1GT / R800**, or `run-msx2plus-cbios.bat` for **MSX2+ / C-BIOS / Z80**. `run.bat` defaults to R800.
-
-The launchers use a local build when available, otherwise `dist/MOTION.rom`. They boot directly from the cartridge without disks, BASIC commands or saved states.
+Without a capacity argument, the launchers select 8 MiB. They use a local build when present, otherwise the ROM in `dist`. No BASIC command, disk or saved state is needed. These launchers select the openMSX FIL ROMs; native ROMs require an emulator or FPGA implementing R20 bit 5.
 
 ## Controls
 
 | Key | Action |
 |---|---|
-| Left / Right | Orbit the camera horizontally, up to ±45° |
-| Up / Down | Adjust camera pitch above the floor |
-| Shift + Up / Down | Zoom while keeping the dancers in view |
-| **T** — Trails | Toggle two fading past poses |
-| **R** — Reflection | Toggle floor reflections |
-| **C** — Character | All three → aachan → kashiyuka → nocchi → all three |
-| **M** — Music | Mute / unmute the original PSG loop |
+| **D — Demo** | Restart the automatic demonstration |
+| Left / Right | Camera yaw, up to ±45° |
+| Up / Down | Camera pitch |
+| Shift + Up / Down | Zoom within the automatic fit limit |
+| **T — Trails** | Toggle the two past poses |
+| **R — Reflection** | Toggle floor reflection |
+| **C — Character** | All → aachan → kashiyuka → nocchi → all |
+| **M — Music** | Mute / unmute without leaving demo mode |
 | Space | Pause / resume |
-| **E** — End | Start the application’s ending early |
-| Esc | Restart motion and music; reset the camera |
+| **E — End** | Start the ending early |
+| Esc | Restart the current mode with default camera and effects |
 
-Playback starts with all three dancers and both visual effects off. After approximately **70.5 seconds**, the application fades to white, fades out the music and holds the final screen. Press Esc to start again.
+Camera, T/R/C, Space and E switch to manual mode while preserving the current scene. Manual mode holds the final white screen until Esc or D. Automatic mode repeats after its approximately 70.5-second motion and a one-second white hold; drawing the next first frame adds a small CPU-dependent delay. Mute preference survives automatic restarts.
 
-## Motion data credit
+## Build
 
-**BVH motion data: [Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/).**
-
-This demo uses the BVH motion data provided by **Perfume global site project #001**, credited to the official primary source linked above. The project provided both BVH motion and MP3 music; this demo uses only the BVH motion, converted into ROM data. The character meshes, MSX viewer and PSG music are original; the official MP3 is not used or distributed. This is an independent, unofficial demo.
-
-The [official project article](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/) describes providing motion data for fan-created derivatives. This demo follows that fan-creation purpose. The article is not presented here as a blanket license grant for the BVH data; see [third-party notes](THIRD_PARTY.md).
-
-## Build from source
-
-Requires Windows, **z88dk**, Windows PowerShell and .NET Framework. Python and WSL are not required.
+Windows z88dk, Windows PowerShell and .NET Framework are required. Normal build and launch need no Python or WSL.
 
 ```bat
 set Z88DK=C:\z88dk
@@ -78,43 +70,36 @@ build.bat
 build-native.bat
 ```
 
-`build.bat` produces `build/MOTION.rom`; `build-native.bat` produces the separate native-FIL ROM. Place the project-provided `aachan.bvh`, `kashiyuka.bvh` and `nocchi.bvh` in `assets/` before building. The build verifies their SHA-256 hashes and runs offline; it does not fetch data from a redistribution repository. The linked official article describes the primary project, but is not itself a direct BVH download endpoint.
+Each command builds both capacities. Use `build.bat 2m` or `build-native.bat 8m` to build one. Outputs are the four names above under `build`. Capacity and FIL settings are independent; all builds share the C sources. The 2 MiB ROM uses standard ASCII16 bank writes rather than ASCII16-X address extensions.
 
-FFmpeg is required only to regenerate the video and GIF, not to build or run the demo. See [media instructions](docs/MEDIA.md).
+Place the official `aachan.bvh`, `kashiyuka.bvh` and `nocchi.bvh` files in `assets` first. Their SHA-256 hashes are checked offline. The original bake is cached; after changing BVH or `BvhBake.cs`, run:
 
-## Performance and technical notes
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\build-rom.ps1 -Profile all -Rebake
+```
 
-| Display | R800 | Z80 |
-|---|---:|---:|
-| Three dancers, effects off | ~15 FPS | ~4 FPS |
-| One dancer, effects off | ~15 FPS | ~4.6 FPS |
-| Three dancers, trails + reflections | ~6 FPS | ~1.3 FPS |
+Then rebuild native ROMs. There is no automatic download from a secondary repository. Media regeneration additionally requires FFmpeg: [media instructions](docs/MEDIA.md).
 
-These are emulator measurements, not real-hardware results. Pose data is 20Hz; slow rendering skips poses without slowing the choreography. FIL is interlaced and can show field differences on moving edges. Native-FIL hardware has not been tested.
+## SX-2 and small ROM devices
 
-The runtime uses fixed-size buffers, integer/fixed-point geometry and banked ROM data. Each dancer has 60 vertices and 72 triangles. geo3d handles transforms, lighting, face sorting and filling.
+The 2 MiB ROM targets **standard ASCII16** and its data banks stay below 128. This is intended for the ASCII-16K ESE-MegaRAM mode used by SX-2-compatible OCM firmware. Select ASCII16 and the appropriate ESE-MegaRAM device in your loader. Keep V9968 + geo3d enabled; standard SX-2 VDP support alone does not provide these extensions. Exact SX-2 loader/firmware and physical operation remain untested.
 
-- [Architecture and data format](docs/DESIGN.md)
-- [Verification and known limitations](VERIFICATION.md)
+Upstream [OCM-PLD history](https://github.com/gnogni/ocm-pld-dev/blob/master/history.txt) identifies SX-2 among supported machines and describes ESE-MegaRAM ASCII-16K support. The 8 MiB ROM still requires [ASCII16-X](https://www.grauw.nl/projects/ascii-x/ascii16-x/).
 
-## Third-party notices
+## Motion source
 
-[tools/machines/MOTIONGT.xml](tools/machines/MOTIONGT.xml) and [tools/machines/MOTIONCB.xml](tools/machines/MOTIONCB.xml) derive from openMSX machine definitions and retain [GPL-2.0](licenses/GPL-2.0.txt). This notice applies only to these two configuration files, not the application code or BVH motion data. BVH attribution and use are described in [third-party notes](THIRD_PARTY.md).
+**BVH motion: [Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/).**
 
-### Build variants
+The ROM contains motion converted from BVH provided by this official primary project. The project provided BVH and MP3; this demo uses only BVH. Its human mesh, MSX viewer and PSG music were created for this independent, unofficial fan demo. The official MP3 is not used or distributed.
 
-| Script | Output | FIL implementation |
-|---|---|---|
-| `build.bat` (default) | `build/MOTION.rom` | Compatibility with the tested geo3d openMSX: R21 bit 6, with a VRAM copy to present each frame |
-| `build-native.bat` | `build/MOTION-native.rom` | Current V9968 FPGA register layout: R20 bit 5, with display-page switching |
+The use basis follows the official description of fan-created works using the motion data; the article is not treated as a blanket open-source license. See [third-party notes](THIRD_PARTY.md).
 
-Both use the same motion, controls and music, and produce 8MB ASCII16-X ROMs. `native` does not mean R800-only. The bundled launchers select `MOTION.rom`.
+## Technical documentation
 
-`build-native.bat` reuses existing baked motion data. After changing BVH inputs or the converter, run `build.bat` first, then `build-native.bat`. `build.bat` always builds the compatibility backend; use `build-native.bat` for the native backend.
+- [Current ROM layout, demo clock and rendering](docs/DESIGN.md)
+- [Verification and measured performance](VERIFICATION.md)
+- [Original technical guide, English PDF](docs/geo3d-motion-stage-technical-guide.en.pdf) / [Japanese PDF](docs/geo3d-motion-stage-technical-guide.ja.pdf)
 
-The current [blueMSX+ V9968 + geo3d branch](https://github.com/Hesoten/blueMSX-plus/tree/experimental/v9968-geo3d) uses R20 bit 5 for FIL. On 2026-10-03, the supplied **v3.1.1 experimental V9968 + geo3d build `2090cd2`** was tested with `MOTION-native.rom`, FS-A1GT BIOS, V9968/256KB VRAM, ASCII16-X and 100% emulation speed. Cold boot, animated dancers, floor rendering, automatic playback and the final white screen were observed. Moving edges sometimes showed interlace combing/field differences; visually smooth frames were also observed. This is a limited visual compatibility check, not a claim of artifact-free rendering. Keyboard controls, effects toggles, audio, CPU mode readback and reset were not verified in this test because the Windows input automation runtime could not initialize. FPGA hardware remains untested. Standard builds without geo3d are not supported.
+The original PDF guide describes the initial release's data layout. The current layout adds baked bounds and a separate 2 MiB profile; use DESIGN for current sizes and code.
 
-
-The blueMSX+ visual check above used the earlier native ROM with SHA-256 `b3ad44a7fee37fed948f5ab5d5407b4bc04f8c352ca005b168ab106bb302b26e`. The current review-fixed native ROM has been rebuilt, but has not been visually rechecked on blueMSX+; its real-hardware operation remains untested.
-
-The performance table records earlier functional-validation measurements. It is an indication of performance, not a repeat of the identical benchmark on the final review-hardened ROM.
+The two machine definitions, [MOTIONGT.xml](tools/machines/MOTIONGT.xml) and [MOTIONCB.xml](tools/machines/MOTIONCB.xml), retain their upstream [GPL-2.0](licenses/GPL-2.0.txt) notices. Those notices apply to these configuration files, not the new application code or BVH data. No project-wide MIT/GPL license is asserted.

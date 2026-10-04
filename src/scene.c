@@ -1,4 +1,5 @@
 #include "stage.h"
+#define MOTION_DEFINE_TOPOLOGY
 #include "motion_data.h"
 #include <arch/z80.h>
 #include <string.h>
@@ -8,6 +9,7 @@ unsigned int selected_bank;
 static int matrix[9], distance;
 static int visible_bounds[6], focus[3];
 static const unsigned char *pose;
+static unsigned int loaded_pose;
 static int qmul(int a, int b) {
     if (!a || !b)
         return 0;
@@ -36,10 +38,13 @@ static void stream(const unsigned char *p, unsigned int size) {
 }
 static void wait_geo(void) {
     unsigned int budget = 65535;
+    unsigned char blocks = platform_r800 ? 4 : 1;
+    if (video_error) return;
     while (geo_index & 1) {
         if (!--budget) {
+            if (--blocks) { budget = 65535; continue; }
             video_error = 3;
-            break;
+            return; /* Preserve GEO error instead of waiting on the VDP again. */
         }
     }
     video_wait();
@@ -90,6 +95,15 @@ static void setup_camera(void) {
         if (need > d)
             d = need;
     }
+    /* Floor can extend outside the viewport, but stays in front of near plane. */
+    for (corner = 0; corner < 4; corner++) {
+        x = (corner & 1) ? 350 : -350;
+        y = FLOOR_Y - focus[1];
+        z = (corner & 2) ? 350 : -350;
+        tz = qmul(matrix[6], x) + qmul(matrix[7], y) + qmul(matrix[8], z);
+        need = 64 - tz;
+        if (need > d) d = need;
+    }
     distance = (int)((long)(d + 12) * camera_zoom / 100);
     geo_index = 0;
     for (i = 0; i < 9; i++)
@@ -106,16 +120,32 @@ static void setup_camera(void) {
     word(SCREEN_HEIGHT);
 }
 static void load_pose(unsigned int frame) {
-    unsigned int bank = MOTION_BANK + frame / 4;
+    unsigned int stored = frame / SAMPLE_STRIDE;
+    unsigned int bank = MOTION_BANK + stored / POSES_PER_BANK;
+    loaded_pose = stored;
     /* ASCII16-X: upper bank bits are address bits 8..11; low bits are data.
      * All executing code, BSS, stack and BIOS IRQ remain outside page 1. */
+#ifdef ROM_ASCII16
+    *(volatile unsigned char *)0x6000 = (unsigned char)bank;
+#else
     *(volatile unsigned char *)(0x6000 | (bank & 0x0f00)) = (unsigned char)bank;
+#endif
     selected_bank = bank;
     /* Keep this bank pinned until drawing completes: stream straight from
      * ROM. The interrupt handler never changes cartridge banks. */
-    pose = (const unsigned char *)(0x4000 + (frame & 3) * FRAME_BYTES);
+    pose = (const unsigned char *)(0x4000 + (stored % POSES_PER_BANK) * FRAME_BYTES);
 }
 static void include_bounds(unsigned char first) {
+#ifndef MOTION_SCAN_BOUNDS
+    const int *bounds = (const int *)(pose + BOUNDS_OFFSET + actor_mode * 12);
+    unsigned char axis;
+    for (axis = 0; axis < 3; ++axis) {
+        if (first || bounds[axis] < visible_bounds[axis])
+            visible_bounds[axis] = bounds[axis];
+        if (first || bounds[axis + 3] > visible_bounds[axis + 3])
+            visible_bounds[axis + 3] = bounds[axis + 3];
+    }
+#else
     const int *v = (const int *)(pose + (actor_mode ? (actor_mode - 1) * 360 : 0));
     unsigned char i, j, count = actor_mode ? 60 : 180;
     int n;
@@ -132,6 +162,7 @@ static void include_bounds(unsigned char first) {
             if (n > visible_bounds[j + 3])
                 visible_bounds[j + 3] = n;
         }
+#endif
 }
 static void light(unsigned char mode) {
     geo_index = 0x5a;
@@ -145,12 +176,56 @@ static void light(unsigned char mode) {
         word(-12000);
     }
 }
+#if NORMAL_BITS != 0
+/* Shared topology lives in RAM-resident code. Only normals vary per pose.
+ * Cache normals across repeated poses and reflection passes; retain OTIR. */
+static unsigned char face_buffer[216 * 11];
+static unsigned int decoded_pose;
+static unsigned char faces_initialized, decoded_valid;
+static void decode_faces(void) {
+    const unsigned char *source = pose + VERTEX_BYTES;
+    unsigned char *target = face_buffer;
+    unsigned int face;
+    if (decoded_valid && decoded_pose == loaded_pose)
+        return;
+    if (!faces_initialized) {
+        for (face = 0; face < 216; face++) {
+            target[0] = face_indices[face * 3];
+            target[1] = face_indices[face * 3 + 1];
+            target[2] = target[3] = face_indices[face * 3 + 2];
+            target[10] = 1;
+            target += 11;
+        }
+        faces_initialized = 1;
+    }
+    target = face_buffer + 4;
+    for (face = 0; face < 216; face++) {
+#if NORMAL_BITS == 8
+        target[0] = target[2] = target[4] = 0;
+        target[1] = source[0];
+        target[3] = source[1];
+        target[5] = source[2];
+        source += 3;
+#else
+        memcpy(target, source, 6);
+        source += 6;
+#endif
+        target += 11;
+    }
+    decoded_pose = loaded_pose;
+    decoded_valid = 1;
+}
+#endif
 static void draw_pose(unsigned char mirror) {
     unsigned char actor = actor_mode ? actor_mode - 1 : 0, nv = actor_mode ? 60 : 180,
                   nf = actor_mode ? 72 : 216;
     const unsigned char *v = pose + actor * 360, *f = pose + VERTEX_BYTES + actor * 792;
     unsigned char i, a, b, c, d;
     int x, y, z, nx, ny, nz;
+#if NORMAL_BITS != 0
+    decode_faces();
+    f = face_buffer + actor * 792;
+#endif
     reg(0x40, 0);
     geo_index = 0x50;
     if (!mirror)
@@ -252,14 +327,21 @@ static void floor_draw(void) {
 void scene_init(void) {
     reg(0x45, 0);
 }
+void scene_reset(void) {
+#if NORMAL_BITS != 0
+    decoded_valid = 0;
+#endif
+}
 void scene_draw(unsigned int frame) {
     unsigned char i;
     load_pose(frame);
     include_bounds(1);
-    if (trails) {
-        load_pose((frame + MOTION_FRAMES - 4) % MOTION_FRAMES);
+    if (trails && frame >= 4) {
+        load_pose(frame - 4);
         include_bounds(0);
-        load_pose((frame + MOTION_FRAMES - 2) % MOTION_FRAMES);
+    }
+    if (trails && frame >= 2) {
+        load_pose(frame - 2);
         include_bounds(0);
     }
     if (reflection && 2 * FLOOR_Y - visible_bounds[4] < visible_bounds[1])
@@ -276,10 +358,12 @@ void scene_draw(unsigned int frame) {
         load_pose(frame);
         draw_pose(1);
     }
-    if (trails) {
-        load_pose((frame + MOTION_FRAMES - 4) % MOTION_FRAMES);
+    if (trails && frame >= 4) {
+        load_pose(frame - 4);
         draw_trace(8);
-        load_pose((frame + MOTION_FRAMES - 2) % MOTION_FRAMES);
+    }
+    if (trails && frame >= 2) {
+        load_pose(frame - 2);
         draw_trace(9);
     }
     load_pose(frame);

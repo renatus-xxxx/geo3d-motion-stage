@@ -1,4 +1,4 @@
-﻿param()
+param()
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 Push-Location $root
@@ -16,7 +16,7 @@ try {
   $content=if($file -match '\.rom$'){[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes((Join-Path $root $file)))}else{[IO.File]::ReadAllText((Join-Path $root $file))}
   if($content -match $privatePattern){$issues += "Possible private path or credential in $file (matched value withheld)"}
  }
- foreach($file in @('dist/MOTION.rom','dist/MOTION-native.rom','dist/motion-stage-demo.mp4','preview.gif')){
+ foreach($file in @('dist/MOTION8.ROM','dist/MOT8N.ROM','dist/MOTION2.ROM','dist/MOT2N.ROM','dist/motion-stage-demo.mp4','preview.gif')){
   if($files -notcontains $file){$issues += "Missing public artifact: $file"}
  }
  foreach($file in ($files | Where-Object {$_ -match '\.md$'})){
@@ -42,14 +42,14 @@ try {
   finally {$sha.Dispose()}
   if($actual -ne $entry.sha256 -or $actual -ne $sums[$entry.file] -or (Get-Item -LiteralPath $path).Length -ne $entry.bytes){$issues += "Artifact hash/size mismatch: $($entry.file)"}
  }
- foreach($name in @('MOTION.rom','MOTION-native.rom','motion-stage-demo.mp4')){
+ foreach($name in @('MOTION8.ROM','MOT8N.ROM','MOTION2.ROM','MOT2N.ROM','motion-stage-demo.mp4')){
   if(@($manifest.files | Where-Object file -eq $name).Count -ne 1 -or !$sums.ContainsKey($name)){$issues += "Missing/duplicate manifest artifact: $name"}
  }
  foreach($file in ($files | Where-Object {$_ -match '\.md$'})){
   $other=if($file -match '\.ja\.md$'){$file -replace '\.ja\.md$','.md'}else{$file -replace '\.md$','.ja.md'}
   if($files -notcontains $other){$issues += "Missing language counterpart: $file"}
   $text=[IO.File]::ReadAllText((Join-Path $root $file))
-  if($text -notmatch '^\[English\]\([^\r\n]+\) \| \[日本語\]\('){$issues += "Missing language links: $file"}
+  if($text -notmatch '^\[English\]\([^\r\n]+\) \| \[\u65e5\u672c\u8a9e\]\('){$issues += "Missing language links: $file"}
  }
  if($issues.Count){$issues | ForEach-Object {Write-Output $_};throw 'Release audit found issues'}
  Write-Output "PASS: $($files.Count) Git candidate files; no detected private paths or credential patterns; release links resolve."

@@ -1,35 +1,94 @@
 {
     "project":  "geo3d-motion-stage",
-    "rom_mapper":  "ASCII16-X",
+    "roms":  [
+                 {
+                     "file":  "MOTION8.ROM",
+                     "bytes":  8388608,
+                     "mapper":  "ASCII16-X",
+                     "pose_hz":  20,
+                     "normal_bits":  16,
+                     "fil":  "R21 bit6",
+                     "minimum_ram_bytes":  65536,
+                     "vram_bytes":  262144
+                 },
+                 {
+                     "file":  "MOT8N.ROM",
+                     "bytes":  8388608,
+                     "mapper":  "ASCII16-X",
+                     "pose_hz":  20,
+                     "normal_bits":  16,
+                     "fil":  "R20 bit5",
+                     "minimum_ram_bytes":  65536,
+                     "vram_bytes":  262144
+                 },
+                 {
+                     "file":  "MOTION2.ROM",
+                     "bytes":  2097152,
+                     "mapper":  "ASCII16",
+                     "pose_hz":  10,
+                     "normal_bits":  16,
+                     "fil":  "R21 bit6",
+                     "minimum_ram_bytes":  65536,
+                     "vram_bytes":  262144
+                 },
+                 {
+                     "file":  "MOT2N.ROM",
+                     "bytes":  2097152,
+                     "mapper":  "ASCII16",
+                     "pose_hz":  10,
+                     "normal_bits":  16,
+                     "fil":  "R20 bit5",
+                     "minimum_ram_bytes":  65536,
+                     "vram_bytes":  262144
+                 }
+             ],
     "display":  "SCREEN 7 FIL, 512x424, 16 colors",
-    "minimum_ram_bytes":  65536,
-    "vram_bytes":  262144,
+    "video_hz":  60,
     "required_extension":  "V9968 + geo3d",
-    "legacy_rom":  "MOTION.rom",
-    "native_rom":  "MOTION-native.rom",
-    "validation":  {
-                       "legacy":  "R800 and Z80 emulator",
-                       "native":  "current ROM: build only; earlier native ROM: blueMSX+ 2090cd2 visual boot/playback/white-ending check with field artifacts; controls/audio/CPU readback/reset and hardware untested"
-                   },
+    "default_mode":  "automatic looping demo",
     "bvh_source":  "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
     "bvh_credit":  "Perfume global site project #001",
     "bvh_use_basis":  "fan-created derivative demo following the official project description",
-    "bvh_official_project":  "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
+    "validation":  {
+                       "openmsx":  "See VERIFICATION.md for current results",
+                       "native":  "Build verified; current ROM runtime and physical FPGA unverified",
+                       "sx2":  "Standard ASCII16 format; physical SX-2 and loader unverified"
+                   },
     "files":  [
                   {
-                      "file":  "MOTION.rom",
+                      "file":  "MOTION8.ROM",
                       "bytes":  8388608,
-                      "sha256":  "b82324d940b2b0a5cc74cf804625a4f68d5521b5a59b1d5bb8e2900871c52d17"
+                      "sha256":  "de19b53ff95d4d223b58aaaa49e2686da96bb0ee7156048557ad8c15ac6e651f"
                   },
                   {
-                      "file":  "MOTION-native.rom",
+                      "file":  "MOT8N.ROM",
                       "bytes":  8388608,
-                      "sha256":  "c5ce2e25c22bac28a91a0a81a803e4c01c5fd4cfeb5be27aad1769c20d640448"
+                      "sha256":  "d9428d4daa65d08f87d8607ae75898bea1e9f814a985aee461952059c216e726"
+                  },
+                  {
+                      "file":  "MOTION2.ROM",
+                      "bytes":  2097152,
+                      "sha256":  "dbc49b47ab4ad0a868b48a4efd860308741958521045ee7ca2cbd7191e9c08f2"
+                  },
+                  {
+                      "file":  "MOT2N.ROM",
+                      "bytes":  2097152,
+                      "sha256":  "16dc99148096ea0719e484950b7c4307d098188dce1ddcc73f09d360f7c9d59a"
                   },
                   {
                       "file":  "motion-stage-demo.mp4",
-                      "bytes":  3011612,
-                      "sha256":  "344f9e7061557d2a52f4b5622f1657e898b958f47a02eb9f76a678200d98d7c5"
+                      "bytes":  3376319,
+                      "sha256":  "52999096db9628a0b19988b6e037097063422dbeb5c107d6e7e7c7ef62df13cf"
+                  },
+                  {
+                      "file":  "comparison-r800.mp4",
+                      "bytes":  3543484,
+                      "sha256":  "a86d32c01d2075c79e051e32c4fe5fa34e88fdc884e15e2a778e14350cca3fb7"
+                  },
+                  {
+                      "file":  "comparison-z80.mp4",
+                      "bytes":  2590727,
+                      "sha256":  "5e2baeb625df2cb7351036e8bc0cc0c0f09d6e06dddfaeda10af8bcc405d8e93"
                   },
                   {
                       "file":  "NOTICE.txt",

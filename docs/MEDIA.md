@@ -1,21 +1,18 @@
 [English](MEDIA.md) | [日本語](MEDIA.ja.md)
 
-# Recreate the demo video and GIF
+# Record the ROM-native demonstration
 
-Requires a configured runtime, a built ROM, Windows PowerShell and FFmpeg. The regular ROM build and launcher do not need FFmpeg.
+Windows PowerShell, FFmpeg and a configured V9968 + geo3d openMSX runtime are required for media generation. They are separate from the Python/WSL-free ROM build and launch.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\capture-demo.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\encode-demo.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\make-preview.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tools\package-release.ps1
 ```
 
-If FFmpeg is not on PATH, pass `-FFmpeg C:\Tools\ffmpeg\bin\ffmpeg.exe` to the last two scripts. Paths are examples.
+The capture runs both capacities on R800 and Z80, recording from the application's actual demo-clock start. No keys or emulator scripts drive effects or cameras; the ROM does. Recording includes the natural application whiteout, original PSG audio and automatic restart verification.
 
-The capture records the R800 application at 640×480 for 42 seconds, using actual key-matrix input. It demonstrates T/R on and off, all four character modes and camera rotation. E triggers the application's own whiteout ending; no video whiteout is added in post-processing.
+Encoding creates two side-by-side comparisons, 8 MiB on the left and 2 MiB on the right, plus a full R800 demonstration. Both comparisons use the same 71.4-second span and end on the application's white screen. Post-processing does not add whiteout, audio fading or motion interpolation. A common deinterlace filter reduces FIL combing. Small English labels fit within the 960×400 comparison image. H.264/AAC copies omit source metadata.
 
-The MP4 uses H.264 video and AAC audio, with smaller English captions inside the frame. Source container metadata is not copied; encoder/muxer tags may still be written. The original eight-second PSG loop is included; the source song is not.
-
-`preview.gif` is a looping 30-second, 480×360, 10 FPS animation made from the uncaptioned capture, with an optimized 64-color GIF palette. It has no audio and is intended as a compact README preview. The application itself remains 512×424, 16 colors.
-
-The media scripts update `dist/motion-stage-demo.mp4` and `preview.gif`; the intermediate AVI and logs stay under ignored `output` and `build` directories.
+`preview.gif` shows the first 30 seconds at 480×360/10 fps without audio. The application remains 512×424/16 colors. Intermediate AVI, logs and private runtime files stay in ignored directories. Distribution contains the ROMs and compressed MP4s, not BIOS, emulators or raw BVH.

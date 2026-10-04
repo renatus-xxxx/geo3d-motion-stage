@@ -1,22 +1,18 @@
 [English](README.md) | [日本語](README.ja.md)
 
-# Prebuilt binaries
+# Prebuilt ROMs and videos
 
-| File | Target | Validation |
-|---|---|---|
-| [MOTION.rom](MOTION.rom) | Legacy V9968 openMSX: FIL = R21 bit 6 | R800 and Z80 emulator playback, controls, ending and reset verified |
-| [MOTION-native.rom](MOTION-native.rom) | Current FPGA: FIL = R20 bit 5 | Build verified; blueMSX+ 2090cd2 boot/playback/white ending observed with field artifacts; controls/audio and hardware untested |
-| [motion-stage-demo.mp4](motion-stage-demo.mp4) | 42-second demonstration | R800 capture with PSG audio and the application's own ending |
+| File | Capacity / motion | Mapper | FIL |
+|---|---|---|---|
+| [MOTION8.ROM](MOTION8.ROM) | 8 MiB / 20 Hz | ASCII16-X | R21 bit6 |
+| [MOT8N.ROM](MOT8N.ROM) | 8 MiB / 20 Hz | ASCII16-X | Native R20 bit5 |
+| [MOTION2.ROM](MOTION2.ROM) | 2 MiB / 10 Hz | ASCII16 | R21 bit6 |
+| [MOT2N.ROM](MOT2N.ROM) | 2 MiB / 10 Hz | ASCII16 | Native R20 bit5 |
 
-Both ROMs are **8,388,608 bytes, ASCII16-X**, and need **V9968 with 256KB VRAM + geo3d + at least 64KB main RAM**. These ROMs are not for a standard V9958-only MSX.
+N means native FIL. All support R800 or Z80 and start a looping automatic demonstration. Both capacities retain exact 16-bit normals. Required: V9968 + geo3d, 256 KiB VRAM, 64 KiB main RAM, 60 Hz. Standard V9958 is insufficient. Select ASCII16 explicitly for 2 MiB; automatic mapper detection is not supported by the tested setup. Physical SX-2/FPGA operation remains untested.
 
-The launch scripts select the legacy ROM. See [runtime setup](../docs/RUNTIME.md) before launching. BIOS and emulator binaries are not included. [SHA256SUMS.txt](SHA256SUMS.txt) contains file checksums; [manifest.json](manifest.json) records sizes and validation scope.
+[Full demo](motion-stage-demo.mp4) · [R800 side-by-side](comparison-r800.mp4) · [Z80 side-by-side](comparison-z80.mp4)
 
-## Data attribution
+[Checksums](SHA256SUMS.txt) and [manifest](manifest.json) identify the exact files. See [verification](../VERIFICATION.md), [controls](../README.md#controls) and [runtime setup](../docs/RUNTIME.md). Native builds and native runtime validation are distinguished there. BIOS and emulator binaries are not included.
 
-BVH motion data: **[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)**.
-
-The ROMs include converted skeletal motion from `aachan.bvh`, `kashiyuka.bvh` and `nocchi.bvh`. The official project provided BVH and MP3; this demo uses only the BVH motion and does not include the official MP3, original song, WAV, BIOS or emulator. This is an independent, unofficial demo. See [NOTICE.txt](NOTICE.txt) and [third-party notes](../THIRD_PARTY.md). The motion data is used for this fan-created derivative demo, following the official project description. Its use basis is documented separately from the machine XML notices.
-
-
-The blueMSX+ visual check above used the earlier native ROM with SHA-256 `b3ad44a7fee37fed948f5ab5d5407b4bc04f8c352ca005b168ab106bb302b26e`. The current review-fixed native ROM has been rebuilt, but has not been visually rechecked on blueMSX+; its real-hardware operation remains untested.
+BVH motion: **[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)**. The ROMs contain converted official BVH. The official MP3 is not used; PSG music is original. See [NOTICE](NOTICE.txt) and [third-party notes](../THIRD_PARTY.md). No project-wide MIT/GPL license is asserted; GPL applies only to the two machine XML configurations.

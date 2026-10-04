@@ -37,6 +37,7 @@ static void interrupt_handler(void) __naked {
  push de
  push hl
  exx
+ call _demo_tick
  call _music_tick
  call _controls_poll
  exx
@@ -141,8 +142,11 @@ unsigned char keyboard_row(unsigned char row) {
 }
 void video_wait(void) {
     unsigned int budget = 65535;
+    unsigned char blocks = platform_r800 ? 4 : 1;
+    if (video_error) return;
     while (status(2) & 1) {
         if (!--budget) {
+            if (--blocks) { budget = 65535; continue; }
             video_error = 1;
             break;
         }
@@ -152,6 +156,7 @@ void video_init(void) {
     unsigned char i, j;
     video_error = back_page = 0;
     displayed_frames = 0;
+    video_reg(1, 0x00); /* Disable BIOS VBlank before reconfiguring the VDP. */
     video_reg(21, 0x3a);
     if (((status(1) >> 1) & 31) != 3) {
         video_error = 2;
@@ -243,12 +248,14 @@ void video_white(unsigned char level) {
 }
 void video_flip(void) {
     unsigned int t, budget = 65535;
+    unsigned char blocks = platform_r800 ? 4 : 1;
     video_wait();
     if (video_error)
         return;
     t = clock_ticks();
     while (clock_ticks() == t) {
         if (!--budget) {
+            if (--blocks) { budget = 65535; continue; }
             video_error = 4; /* Missing VBlank: report instead of hanging. */
             return;
         }

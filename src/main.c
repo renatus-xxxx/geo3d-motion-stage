@@ -6,7 +6,6 @@ unsigned char trails, reflection, actor_mode;
 signed char camera_yaw, camera_pitch;
 unsigned char camera_zoom;
 volatile unsigned int stage_ready;
-unsigned int playback_ticks;
 static unsigned char held_keys;
 static volatile unsigned char pending_keys;
 
@@ -21,7 +20,7 @@ void controls_poll(void) {
     /* T: Trails, R: Reflection, C: Character selection. */
     unsigned char keys = ((~row5 >> 1) & 1) | ((~row4 >> 6) & 2) | ((~row3 & 1) << 2) |
                          ((~row8 & 1) << 3) | ((~row7 & 4) << 2) | ((~row4 & 4) << 3) |
-                         ((~row3 & 4) << 4);
+                         ((~row3 & 4) << 4) | ((~row3 & 2) << 6);
     pending_keys |= keys & ~held_keys;
     held_keys = keys;
 }
@@ -44,25 +43,40 @@ static void controls(unsigned int elapsed) {
  ei
 #endasm
         // clang-format on
-        if (pressed & 1) trails ^= 1;
+    /* D is a fresh demo; visual controls enter manual mode without a jump. */
+    if (pressed & 128) {
+        demo_active = 1;
+        demo_reset();
+        return;
+    }
+    if ((pressed & (1 | 2 | 4 | 8 | 64)) || (row8 & 240) != 240)
+        demo_active = 0;
+    if (pressed & 1) trails ^= 1;
     if (pressed & 2)
         reflection ^= 1;
     if (pressed & 4)
         actor_mode = (actor_mode + 1) & 3;
-    if (pressed & 64) {
+    if ((pressed & 64) && demo_wait != 2) {
+#asm
+        di
+#endasm
         playback_ticks = MOTION_FRAMES * 3 - 30; /* E also resumes a paused ending. */
         paused = 0;
+        demo_wait = 0;
+#asm
+        ei
+#endasm
     }
     if (pressed & 32)
         music_enabled ^= 1;
     if ((pressed & 8) && !(pressed & 64))
         paused ^= 1;
     if (pressed & 16) {
-        camera_reset();
-        playback_ticks = 0;
-        music_restart = 1;
-        paused = 0;
+        demo_reset();
+        return;
     }
+    if (demo_active)
+        return;
     value = camera_yaw;
     if (!(row8 & 16))
         value -= step;
@@ -98,12 +112,12 @@ static void controls(unsigned int elapsed) {
     }
 }
 void main(void) {
-    unsigned int previous, now, elapsed;
+    unsigned int previous, now, elapsed, t;
     platform_init();
     music_init();
     video_init();
     scene_init();
-    camera_reset();
+    demo_reset();
     previous = clock_ticks();
     stage_ready = 0x4d53;
     while (!video_error) {
@@ -111,21 +125,35 @@ void main(void) {
         elapsed = now - previous;
         previous = now;
         controls(elapsed);
-        if (!paused && playback_ticks < MOTION_FRAMES * 3) {
-            playback_ticks += elapsed;
-            if (playback_ticks >= MOTION_FRAMES * 3)
-                playback_ticks = MOTION_FRAMES * 3;
+        if (demo_wait == 1) {
+            if (demo_active && demo_hold_ticks >= 60) {
+                ++demo_loops;
+                demo_reset();
+            } else {
+#asm
+                halt
+#endasm
+                continue;
+            }
         }
-        motion_frame = playback_ticks / 3;
+        t = demo_time();
+        if (demo_active)
+            demo_update(t);
+        motion_frame = t / 3;
         if (motion_frame >= MOTION_FRAMES)
             motion_frame = MOTION_FRAMES - 1;
         scene_draw(motion_frame);
-        video_white(playback_ticks >= MOTION_FRAMES * 3
-                        ? 31
-                        : (playback_ticks > MOTION_FRAMES * 3 - 30
-                               ? (unsigned int)(playback_ticks - (MOTION_FRAMES * 3 - 30)) * 31 / 30
-                               : 0));
+        t = demo_time();
+        if (demo_wait != 2)
+            video_white(t > MOTION_FRAMES * 3 - 30
+                            ? t - (MOTION_FRAMES * 3 - 30) + 1 : 0);
         video_flip();
+        if (demo_wait == 2) {
+            video_white(0); /* New page is visible before restoring its palette. */
+            demo_start();
+        } else if (t >= MOTION_FRAMES * 3) {
+            demo_hold();
+        }
     }
     /* A timed-out device produces a visible red border instead of hanging. */
     video_reg(7, 14);
