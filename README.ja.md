@@ -92,6 +92,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\build-rom.ps1 -Profile
 
 **BVHモーション：[Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/)。**
 
+入手先：[公式 perfume-global.com 配布ZIPのInternet Archive保存版（bvhfiles.zip）](https://web.archive.org/web/20130907145700id_/http://cdn.perfume-global.com/launch/swf/0521_3/assets/dl/bvhfiles.zip)。展開した `aachan.bvh`、`kashiyuka.bvh`、`nocchi.bvh` を、ビルド前に `assets` へ配置してください。
+
 公式の一次プロジェクトが提供したBVHを変換してROMへ収録しています。同プロジェクトはBVHとMP3を提供しましたが、このデモはBVHのみを使用します。人体メッシュ、MSXビューアー、PSG音楽は新規制作です。公式MP3は使用・配布しません。独立した非公式ファンデモです。
 
 公式記事で説明される、モーションを用いたファンの二次創作として制作しています。記事を包括的なオープンソースライセンスとは扱いません。[第三者資料](THIRD_PARTY.ja.md)に区別を記載しています。

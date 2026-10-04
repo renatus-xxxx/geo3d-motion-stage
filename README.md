@@ -92,6 +92,8 @@ Upstream [OCM-PLD history](https://github.com/gnogni/ocm-pld-dev/blob/master/his
 
 **BVH motion: [Perfume global site project #001](https://perfume-global.com/web/2012/03/perfume-global-site-project-001/).**
 
+Download the original perfume-global.com distribution ZIP from the [Internet Archive snapshot of bvhfiles.zip](https://web.archive.org/web/20130907145700id_/http://cdn.perfume-global.com/launch/swf/0521_3/assets/dl/bvhfiles.zip). Extract `aachan.bvh`, `kashiyuka.bvh` and `nocchi.bvh` into `assets` before building.
+
 The ROM contains motion converted from BVH provided by this official primary project. The project provided BVH and MP3; this demo uses only BVH. Its human mesh, MSX viewer and PSG music were created for this independent, unofficial fan demo. The official MP3 is not used or distributed.
 
 The use basis follows the official description of fan-created works using the motion data; the article is not treated as a blanket open-source license. See [third-party notes](THIRD_PARTY.md).
