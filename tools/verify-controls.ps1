@@ -1,7 +1,7 @@
-param([ValidateSet('8m','2m')][string]$Profile='8m',[ValidateSet('GT','CB')][string]$Machine='GT',[string]$RuntimeRoot='',[switch]$AutoMapper)
+param([ValidateSet('8m','2m')][string]$Profile='8m',[ValidateSet('GT','CB')][string]$Machine='GT',[ValidateSet('internal','external')][string]$Vdp='internal',[string]$MachineName='',[string]$RuntimeRoot='',[switch]$AutoMapper)
 $ErrorActionPreference='Stop'
-$root=Split-Path $PSScriptRoot -Parent;if(!$RuntimeRoot){$RuntimeRoot=$root}
-$out="$root\output\controls-$Profile-$Machine$(if($AutoMapper){'-auto'})";New-Item -ItemType Directory -Force $out,"$out\home" | Out-Null
+$root=Split-Path $PSScriptRoot -Parent;if(!$RuntimeRoot){$RuntimeRoot=$root};if(!$MachineName){$MachineName="MOTION$Machine"}
+$out="$root\output\controls-$Profile-$Machine-$Vdp$(if($AutoMapper){'-auto'})";New-Item -ItemType Directory -Force $out,"$out\home" | Out-Null
 $map=Get-Content "$root\build\$Profile\STAGE.map" -Raw
 $name=if($Profile -eq '2m'){'MOTION2.ROM'}else{'MOTION8.ROM'}
 $tcl=@'
@@ -19,6 +19,7 @@ proc check {ok message} {if {!$ok} {note "FAIL $message";close $::log;exit};note
 proc key {row bit} {keymatrixdown $row $bit;after time 0.4 [list keymatrixup $row $bit]}
 proc begin {} {
  if {$::begun || [word @stage_ready@]!=19795 || [byte @demo_wait@]!=0} {return}
+ check [expr {[byte @video_control_port@]==@PORT@ && [byte @video_type@]==3}] "VDP selection"
  set ::begun 1
  after time 2 {key 5 2}
  after time 3 {check [expr {![byte @demo_active@] && [byte @trails@]}] "T enters manual";key 5 2}
@@ -44,10 +45,11 @@ proc begin {} {
 debug set_watchpoint write_mem @demo_wait@ {} begin
 after time 20 {if {!$::begun} {note "FAIL boot";exit}}
 '@
-foreach($s in @('stage_ready','demo_wait','demo_active','trails','reflection','actor_mode','music_enabled','music_ticks','paused','playback_ticks','white_level','video_error')){$v=[regex]::Match($map,'(?m)^_'+$s+'\s*=\s*\$([0-9A-Fa-f]+)');if(!$v.Success){throw "Missing symbol $s"};$tcl=$tcl.Replace("@$s@",[string][Convert]::ToInt32($v.Groups[1].Value,16))}
-$tcl=$tcl.Replace('@OUT@',$out.Replace('\','/')).Replace('@CPU@',$(if($Machine -eq 'GT'){'r800'}else{'z80'}));[IO.File]::WriteAllText("$out/run.tcl",$tcl)
+foreach($s in @('video_control_port','video_type','stage_ready','demo_wait','demo_active','trails','reflection','actor_mode','music_enabled','music_ticks','paused','playback_ticks','white_level','video_error')){$v=[regex]::Match($map,'(?m)^_'+$s+'\s*=\s*\$([0-9A-Fa-f]+)');if(!$v.Success){throw "Missing symbol $s"};$tcl=$tcl.Replace("@$s@",[string][Convert]::ToInt32($v.Groups[1].Value,16))}
+$tcl=$tcl.Replace('@OUT@',$out.Replace('\','/')).Replace('@CPU@',$(if($Machine -eq 'GT'){'r800'}else{'z80'}));$tcl=$tcl.Replace('@PORT@',$(if($Vdp -eq 'external'){'137'}else{'153'})).Replace('@GEOPORT@',$(if($Vdp -eq 'external'){'141'}else{'157'}));[IO.File]::WriteAllText("$out/run.tcl",$tcl)
 $env:OPENMSX_HOME="$out\home";$env:OPENMSX_USER_DATA="$RuntimeRoot\runtime\share";$env:OPENMSX_SYSTEM_DATA="$RuntimeRoot\emulator\share"
 $mapper=if($AutoMapper){''}else{if($Profile -eq '2m'){'-romtype ASCII16'}else{'-romtype ASCII16-X'}}
-$taskArguments="-machine MOTION$Machine -ext geo3d -carta `"$root\build\$name`" $mapper -script `"$out\run.tcl`""
+$extensions=if($Vdp -eq 'external'){'-ext HRA_V9968 -ext geo3d88'}else{'-ext geo3d'}
+$taskArguments="-machine $MachineName $extensions -carta `"$root\build\$name`" $mapper -script `"$out\run.tcl`""
 $p=Start-Process "$RuntimeRoot\emulator\openmsx.exe" -ArgumentList $taskArguments -WorkingDirectory $root -WindowStyle Hidden -PassThru -RedirectStandardError "$out/stderr.txt" -RedirectStandardOutput "$out/stdout.txt"
 Write-Output "START controls $out PID=$($p.Id)"

@@ -54,13 +54,13 @@ Therefore keyboard and automatic camera rotations remain dynamic. Zoom 100..200%
 
 BIOS stays at 0000..3FFF, ROM data window at 4000..7FFF, C code/constant tables/BSS start at 8400. The build rejects BSS reaching beyond E000. IM2 vectors occupy E000..E100, jump stub E1E1..E1E3, boot helper around E200, stack grows downward from F300, and BIOS workspace F380 onward is preserved.
 
-Minimum main RAM remains 64 KiB; no RAM mapper is used by the application. Only the 2 MiB profile needs the 2,376-byte decoded-face buffer. Exact code and BSS endpoints are in generated STAGE maps. Startup maps page 2 to the page-3 RAM slot, initializes the VDP through BIOS, then programs SCREEN 7 FIL directly. R800 DRAM is selected only when BIOS generation 002Dh equals 3 and CHGCPU exists; other machines stay on Z80.
+Minimum main RAM remains 64 KiB; no RAM mapper is used by the application. Only the 2 MiB profile needs the 2,376-byte decoded-face buffer. Exact code and BSS endpoints are in generated STAGE maps. Startup maps page 2 to the page-3 RAM slot, detects the main/external V9968 and programs SCREEN 7 FIL directly without CHGMOD. See [VDP detection and synchronization](VDP.md). R800 DRAM is selected only when BIOS generation 002Dh equals 3 and CHGCPU exists; other machines stay on Z80.
 
 ## FIL and geo3d
 
 All distributions use SCREEN 7 FIL, 512×424, 16 colors, RGB5 palette and 256 KiB VRAM. The openMSX profile sets R20=11h/R21=7Ah and copies the finished Y=512 page to Y=0. Native FIL sets R20=31h/R21=3Ah and switches display pages. These profiles are independent of CPU and capacity. R9=84h explicitly selects 60 Hz, 212 lines per field and EO.
 
-geo3d receives a camera matrix, translation, vertices, faces and lighting through 9Dh/9Fh. It transforms, sorts and fills the faces. The main code waits for geo3d and VDP completion. Reflection reverses vertex Y, winding and normal Y. Trails are skeletal lines from 100 and 200 ms earlier; they never wrap to the clip ending at startup. The floor uses a 5×5 vertex / 4×4 cell mesh plus a horizon fill. No alpha blending or image interpolation is used.
+geo3d receives a camera matrix, translation, vertices, faces and lighting through the selected 9Dh/9Fh or 8Dh/8Fh ports. It transforms, sorts and fills the faces. The main code waits for geo3d and VDP completion. Reflection reverses vertex Y, winding and normal Y. Trails are skeletal lines from 100 and 200 ms earlier; they never wrap to the clip ending at startup. The floor uses a 5×5 vertex / 4×4 cell mesh plus a horizon fill. No alpha blending or image interpolation is used.
 
 ## Shared demo clock
 

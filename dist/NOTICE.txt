@@ -19,3 +19,5 @@ tools/machines/MOTIONGT.xml and tools/machines/MOTIONCB.xml derive from
 openMSX GPL-2.0 definitions. GPL-2.0 applies only to these two configuration
 files, not the application code or BVH motion data.
 See ../licenses/GPL-2.0.txt and ../THIRD_PARTY.md.
+V9968 detection follows HRA!'s sample (Copyright 2025 t.hara).
+See ../licenses/MIT-VDP-DETECT.txt for the scoped MIT notice.

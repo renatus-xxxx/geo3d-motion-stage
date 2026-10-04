@@ -27,3 +27,7 @@ Raw BVH is excluded from Git. ROMs with converted data are under `dist/`. The of
 Machine definitions were copied from the local validation environment. openMSX/definitions retain GPL; C-BIOS retains its distribution license. Local emulator/BIOS copies are excluded from Git, and FS-A1GT BIOS is not distributed here.
 
 `tools/machines/MOTIONGT.xml` and `MOTIONCB.xml` derive from GPL-2.0 openMSX definitions and select V9968. See `licenses/GPL-2.0.txt`. BIOS/emulator binaries are not distributed. The GPL-2.0 notice applies only to these two XML configuration files, not the application code or BVH motion data.
+
+## V9968 detection algorithm
+
+The detection procedure in src/device.c adapts HRA!'s MIT-licensed sample (t.hara, 2025). See [source and adaptation details](docs/VDP.md) and the [copyright and MIT permission notice](licenses/MIT-VDP-DETECT.txt). This notice is scoped to the detection sample-derived portion, not a project-wide license declaration for the newly written application.

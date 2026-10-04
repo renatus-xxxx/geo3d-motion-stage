@@ -1,7 +1,7 @@
 #include "stage.h"
 #include <arch/z80.h>
-__sfr __at(0x99) vdp_control;
-__sfr __at(0x9a) palette_port;
+static unsigned char interrupt_ready;
+
 __sfr __at(0xaa) ppi_select;
 __sfr __at(0xa9) ppi_keys;
 unsigned char video_error, back_page;
@@ -16,17 +16,19 @@ static void interrupt_handler(void) __naked {
 #asm
  push af
  push hl
+ push bc
+ ld a,(_video_control_port)
+ ld c,a
  xor a
- out (0x99),a
+ out (c),a
  ld a,0x8f
- out (0x99),a
- in a,(0x99)
+ out (c),a
+ in a,(c)
  and 0x80
  jr z,motion_irq_end
  ld hl,(_vblank_ticks)
  inc hl
  ld (_vblank_ticks),hl
- push bc
  push de
  push ix
  push iy
@@ -50,8 +52,8 @@ static void interrupt_handler(void) __naked {
  pop iy
  pop ix
  pop de
- pop bc
 motion_irq_end:
+ pop bc
  pop hl
  pop af
  ei
@@ -71,6 +73,7 @@ static void install_interrupt(void) {
     *(unsigned char *)0xe1e1 = 0xc3;
     *(unsigned int *)0xe1e2 = address;
     vblank_ticks = 0;
+    interrupt_ready = 1;
     // clang-format off
 #asm
  ld a,0xe0
@@ -91,12 +94,14 @@ void video_reg(unsigned char r, unsigned char v) {
  di
 #endasm
         // clang-format on
-        vdp_control = v;
-    vdp_control = r | 128;
+        z80_outp(video_control_port, v);
+    z80_outp(video_control_port, r | 128);
     // clang-format off
+    if (interrupt_ready) {
 #asm
  ei
 #endasm
+    }
     // clang-format on
 }
 static unsigned char status(unsigned char r) {
@@ -106,15 +111,17 @@ static unsigned char status(unsigned char r) {
  di
 #endasm
         // clang-format on
-        vdp_control = r;
-    vdp_control = 143;
-    result = vdp_control;
-    vdp_control = 0;
-    vdp_control = 143;
+        z80_outp(video_control_port, r);
+    z80_outp(video_control_port, 143);
+    result = z80_inp(video_control_port);
+    z80_outp(video_control_port, 0);
+    z80_outp(video_control_port, 143);
     // clang-format off
+    if (interrupt_ready) {
 #asm
  ei
 #endasm
+    }
         // clang-format on
         return result;
 }
@@ -154,7 +161,10 @@ void video_wait(void) {
 }
 void video_init(void) {
     unsigned char i, j;
-    video_error = back_page = 0;
+    interrupt_ready = 0;
+    video_detect();
+    if (video_error) return;
+    back_page = 0;
     displayed_frames = 0;
     video_reg(1, 0x00); /* Disable BIOS VBlank before reconfiguring the VDP. */
     video_reg(21, 0x3a);
@@ -183,10 +193,7 @@ void video_init(void) {
     video_reg(16, 0);
     for (i = 0; i < 16; i++)
         for (j = 0; j < 3; j++)
-            palette_port = palette[i][j];
-    *(unsigned char *)0xf3df = 0x0a; /* RG0SAV */
-    *(unsigned char *)0xf3e0 = 0x60; /* BIOS enables VBlank interrupts. */
-    *(unsigned char *)0xf3e8 = 0x84; /* RG9SAV */
+            z80_outp(video_palette_port, palette[i][j]);
     back_page = 1;
     video_clear();
     video_wait();
@@ -220,7 +227,7 @@ static void fill(unsigned int y, unsigned int height, unsigned char color) {
         packet[8] = color;
         packet[10] = 0xc0;
         video_reg(17, 36);
-        z80_otir(packet, 0x9b, 11);
+        z80_otir(packet, video_command_port, 11);
     }
 }
 void video_clear(void) {
@@ -244,12 +251,11 @@ void video_white(unsigned char level) {
     video_reg(16, 0);
     for (i = 0; i < 16; i++)
         for (j = 0; j < 3; j++)
-            palette_port = palette[i][j] + (unsigned int)(31 - palette[i][j]) * level / 31;
+            z80_outp(video_palette_port, palette[i][j] + (unsigned int)(31 - palette[i][j]) * level / 31);
 }
-void video_flip(void) {
+void video_idle(void) {
     unsigned int t, budget = 65535;
     unsigned char blocks = platform_r800 ? 4 : 1;
-    video_wait();
     if (video_error)
         return;
     t = clock_ticks();
@@ -260,6 +266,11 @@ void video_flip(void) {
             return;
         }
     }
+}
+void video_flip(void) {
+    video_wait();
+    video_idle();
+    if (video_error) return;
 #ifdef V9968_NATIVE_FIL
     video_reg(2, back_page ? 0x7f : 0x3f);
     back_page ^= 1;
@@ -274,7 +285,7 @@ void video_flip(void) {
             copy[1] = half;
             copy[5] = half;
             video_reg(17, 32);
-            z80_otir(copy, 0x9b, 15);
+            z80_otir(copy, video_command_port, 15);
         }
     }
 #endif

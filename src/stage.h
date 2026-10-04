@@ -5,6 +5,14 @@
 #define SCREEN_FOCAL 320
 #define SCREEN_PAGE_Y 512
 extern unsigned char platform_r800, video_error, back_page;
+extern unsigned char video_control_port, video_palette_port, video_command_port;
+extern unsigned char geo_index_port, geo_data_port, video_external, video_type;
+void video_detect(void);
+void video_fail(void);
+void geo_write_index(unsigned char value) __z88dk_fastcall;
+void geo_write_byte(unsigned char value) __z88dk_fastcall;
+void geo_write_word(int value) __z88dk_fastcall;
+unsigned char geo_status(void);
 extern unsigned int displayed_frames, motion_frame, selected_bank;
 extern volatile unsigned char paused;
 extern unsigned char trails, reflection, actor_mode;
@@ -32,6 +40,7 @@ void video_wait(void);
 void video_clear(void);
 unsigned int video_draw_y(void);
 void video_flip(void);
+void video_idle(void);
 extern volatile unsigned char white_level;
 void video_white(unsigned char level);
 unsigned int clock_ticks(void);

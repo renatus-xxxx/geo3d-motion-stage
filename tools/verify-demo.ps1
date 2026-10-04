@@ -1,10 +1,10 @@
-param([ValidateSet('8m','2m')][string]$Profile='8m',[ValidateSet('GT','CB')][string]$Machine='GT',[int]$Seconds=160,[switch]$Realtime,[switch]$Capture,[switch]$Background,[switch]$Fit,[switch]$ManualCamera,[switch]$Headless,[string]$RuntimeRoot='',[string]$Label='')
+param([ValidateSet('8m','2m')][string]$Profile='8m',[ValidateSet('GT','CB')][string]$Machine='GT',[int]$Seconds=160,[switch]$Realtime,[switch]$Capture,[switch]$Background,[switch]$Fit,[switch]$ManualCamera,[switch]$Headless,[ValidateSet('internal','external')][string]$Vdp='internal',[string]$MachineName='',[string]$RuntimeRoot='',[string]$Label='')
 $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
-if(!$RuntimeRoot){$RuntimeRoot=$root}
+if(!$RuntimeRoot){$RuntimeRoot=$root};if(!$MachineName){$MachineName="MOTION$Machine"}
 $name=if($Profile -eq '2m'){'MOTION2.ROM'}else{'MOTION8.ROM'}
 $mapper=if($Profile -eq '2m'){'ASCII16'}else{'ASCII16-X'}
-$out="$root\output\verify-$Profile-$Machine$Label";New-Item -ItemType Directory -Force $out,"$out\home" | Out-Null
+$out="$root\output\verify-$Profile-$Machine-$Vdp$Label";New-Item -ItemType Directory -Force $out,"$out\home" | Out-Null
 Copy-Item "$root\build\$name" "$out\$name" -Force
 $romPath="$out\$name"
 $map=Get-Content "$root\build\$Profile\STAGE.map" -Raw
@@ -41,6 +41,8 @@ proc fail {s} {note "FAIL $s";close $::log;exit}
 proc begin {} {
  if {!$::started && [word @stage_ready@]==19795 && [byte @demo_wait@]==0} {
   set ::started 1;set ::epoch [machine_info time];set ::wallstart [clock seconds]
+  if {[byte @video_control_port@]!=@PORT@ || [byte @geo_index_port@]!=@GEOPORT@ || [byte @video_type@]!=3} {fail "device selection"}
+  note "DEVICE control=[byte @video_control_port@] geo=[byte @geo_index_port@] external=[byte @video_external@]"
   @RECORD@
   @CAMERAKEYS@
   note "BEGIN t=$::epoch"
@@ -163,15 +165,17 @@ after time 42 {keymatrixup 8 16;keymatrixup 8 32}
 after time 46 {keymatrixdown 3 2};after time 46.3 {keymatrixup 3 2}
 '@}else{''}
 $tcl=$tcl.Replace('@CAMERAKEYS@',$cameraKeys)
-$symbols=@('stage_ready','displayed_frames','vblank_ticks','video_error','motion_frame','selected_bank','playback_ticks','demo_loops','demo_wait','white_level','trails','reflection','actor_mode','music_ticks','matrix','focus','distance')
+$symbols=@('video_control_port','geo_index_port','video_type','video_external','stage_ready','displayed_frames','vblank_ticks','video_error','motion_frame','selected_bank','playback_ticks','demo_loops','demo_wait','white_level','trails','reflection','actor_mode','music_ticks','matrix','focus','distance')
 foreach($s in $symbols){$m=[regex]::Match($map,'(?m)^_'+$s+'\s*=\s*\$([0-9A-Fa-f]+)');if(!$m.Success){throw "Missing symbol: $s"};$tcl=$tcl.Replace("@$s@",[string][Convert]::ToInt32($m.Groups[1].Value,16))}
 $record=if($Capture){'record start -doublesize "$::out/capture.avi"'}else{''}
 $stop=if($Capture){'record stop'}else{''}
 $tcl=$tcl.Replace('@OUT@',$out.Replace('\','/')).Replace('@SECONDS@',"$Seconds").Replace('@THROTTLE@',$(if($Realtime){'true'}else{'false'})).Replace('@CPU@',$(if($Machine -eq 'GT'){'r800'}else{'z80'})).Replace('@RECORD@',$record).Replace('@STOP@',$stop)
+if($Vdp -eq 'external' -and !$Headless){$tcl=$tcl.Replace('  note "BEGIN t=$::epoch"','  set ::videosource V9968'+"`n"+'  note "BEGIN t=$::epoch"')}
 if($Headless){if($Capture){throw 'Capture needs a renderer'};$tcl="set renderer none`n"+$tcl}
-[IO.File]::WriteAllText("$out/run.tcl",$tcl)
+$tcl=$tcl.Replace('@PORT@',$(if($Vdp -eq 'external'){'137'}else{'153'})).Replace('@GEOPORT@',$(if($Vdp -eq 'external'){'141'}else{'157'}));[IO.File]::WriteAllText("$out/run.tcl",$tcl)
 $env:OPENMSX_HOME="$out\home";$env:OPENMSX_USER_DATA="$RuntimeRoot\runtime\share";$env:OPENMSX_SYSTEM_DATA="$RuntimeRoot\emulator\share"
-$taskArguments="-machine MOTION$Machine -ext geo3d -carta `"$romPath`" -romtype $mapper -script `"$out\run.tcl`""
+$extensions=if($Vdp -eq 'external'){'-ext HRA_V9968 -ext geo3d88'}else{'-ext geo3d'}
+$taskArguments="-machine $MachineName $extensions -carta `"$romPath`" -romtype $mapper -script `"$out\run.tcl`""
 $options=@{FilePath="$RuntimeRoot\emulator\openmsx.exe";ArgumentList=$taskArguments;WorkingDirectory=$root;WindowStyle='Hidden';PassThru=$true;RedirectStandardError="$out\stderr.txt";RedirectStandardOutput="$out\stdout.txt"}
 if(!$Background){$options.Wait=$true}
 $process=Start-Process @options

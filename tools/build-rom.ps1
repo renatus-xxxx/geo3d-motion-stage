@@ -18,7 +18,7 @@ foreach($p in $profiles) {
  [CompactMotion]::Run("$root\build\motion-banks.bin",$out,$(if($p -eq '2m'){2}else{1}),$(if($p -eq '2m'){16}else{0}))
  $suffix=if($Native){'-native'}else{''}
  $flags=@();if($Native){$flags+='-DV9968_NATIVE_FIL'};if($p -eq '2m'){$flags+='-DROM_ASCII16'};if($ScanBounds){$flags+='-DMOTION_SCAN_BOUNDS'}
- & "$env:Z88DK\bin\zcc.exe" +msx -subtype=bin -zorg=33792 -compiler=sdcc -SO2 -pragma-define:REGISTER_SP=62208 -pragma-define:CRT_ENABLE_EIDI=0 @flags -Isrc "-Ibuild/$folder" src/main.c src/demo.c src/video.c src/scene.c src/trig.c src/platform.c src/music.c -o "build/$folder/STAGE$suffix.bin" -m *> "$out/build$suffix.log"
+ & "$env:Z88DK\bin\zcc.exe" +msx -subtype=bin -zorg=33792 -compiler=sdcc -SO2 -pragma-define:REGISTER_SP=62208 -pragma-define:CRT_ENABLE_EIDI=0 @flags -Isrc "-Ibuild/$folder" src/main.c src/demo.c src/video.c src/device.c src/scene.c src/trig.c src/platform.c src/music.c -o "build/$folder/STAGE$suffix.bin" -m *> "$out/build$suffix.log"
  if($LASTEXITCODE){throw "Compile failed: $out/build$suffix.log"}
  & tools/pack.ps1 -Profile $p -Work $out -Layout -Native:$Native
  $boot=(Get-Content src/boot.asm -Raw).Replace('build/rom_layout.inc',"build/$folder/rom_layout$suffix.inc")

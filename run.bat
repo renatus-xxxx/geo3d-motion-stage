@@ -5,6 +5,10 @@ if not defined MOTION_MACHINE set "MOTION_MACHINE=MOTIONGT"
 if not defined MOTION_PROFILE set "MOTION_PROFILE=8m"
 if /i "%~1"=="8m" (set "MOTION_PROFILE=8m" & shift)
 if /i "%~1"=="2m" (set "MOTION_PROFILE=2m" & shift)
+if not defined MOTION_VDP set "MOTION_VDP=internal"
+if /i "%~1"=="external" (set "MOTION_VDP=external" & shift)
+set "MOTION_EXTENSIONS=-ext geo3d"
+if /i "%MOTION_VDP%"=="external" set "MOTION_EXTENSIONS=-ext HRA_V9968 -ext geo3d88"
 if /i not "%MOTION_PROFILE%"=="8m" if /i not "%MOTION_PROFILE%"=="2m" (echo Select 8m or 2m. & exit /b 1)
 set "MOTION_FILE=MOTION8.ROM"
 if /i "%MOTION_PROFILE%"=="2m" set "MOTION_FILE=MOTION2.ROM"
@@ -27,5 +31,5 @@ set "MOTION_ARGUMENTS=%MOTION_ARGUMENTS% %1"
 shift
 goto arguments
 :launch
-"%CD%\emulator\openmsx.exe" -machine %MOTION_MACHINE% -ext geo3d -carta "%MOTION_ROM%" -romtype %MOTION_MAPPER% -script "%CD%\tools\launch.tcl" %MOTION_ARGUMENTS%
+"%CD%\emulator\openmsx.exe" -machine %MOTION_MACHINE% %MOTION_EXTENSIONS% -carta "%MOTION_ROM%" -romtype %MOTION_MAPPER% -script "%CD%\tools\launch.tcl" %MOTION_ARGUMENTS%
 exit /b %errorlevel%

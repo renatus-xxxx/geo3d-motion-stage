@@ -8,6 +8,8 @@ A cartridge-native 3D dance demo for **MSX with V9968 + geo3d**. Three low-polyg
 
 The ROM starts a demonstration automatically: effects, individual characters and camera movement follow a shared timeline. The application fades to white and fades its music, then starts again without input. You can take control at any point.
 
+At boot, the ROM detects external V9968 first, otherwise uses the main V9968. geo3d is required on the selected device. See [detection, initialization and synchronization](docs/VDP.md). To emulate the external expansion, use `run-turbor.bat 8m external` or `run-msx2plus-cbios.bat 2m external`.
+
 ## Download
 
 | ROM | Motion / mapper | FIL implementation |

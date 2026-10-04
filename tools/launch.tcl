@@ -6,3 +6,6 @@ set minframeskip 0
 set maxframeskip 0
 set vsync off
 set fullscreen false
+if {[info exists ::env(MOTION_VDP)] && $::env(MOTION_VDP) eq "external"} {
+    after time 1 {set ::videosource V9968}
+}

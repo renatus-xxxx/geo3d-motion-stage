@@ -41,8 +41,6 @@ secondary:
 ram_slot:
     ld h,$80
     call $0024
-    ld a,5
-    call $005F
     di
     ld hl,helper_rom
     ld de,$E200

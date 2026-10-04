@@ -51,3 +51,8 @@ The blueMSX+ visual check above used the earlier native ROM with SHA-256 `b3ad44
 ## Capacity selection
 
 Pass 2m to a launcher to select MOTION2.ROM and standard ASCII16; no argument selects MOTION8.ROM and ASCII16-X. Example: run-msx2plus-cbios.bat 2m. The native 2 MiB ROM is MOT2N.ROM. Mapper auto-detection failed with the tested openMSX build for 2 MiB; select ASCII16 explicitly. On SX-2, select compatible ESE-MegaRAM in the loader and retain V9968 + geo3d. Physical operation remains untested.
+
+
+## External V9968
+
+The external configuration also requires HRA_V9968 and geo3d88 emulator extensions. Use run-turbor.bat 8m external or run-msx2plus-cbios.bat 2m external to insert them and display the V9968 video source. The same ROM detects the external device. See [the device specification](VDP.md).

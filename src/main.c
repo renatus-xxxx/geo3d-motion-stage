@@ -116,6 +116,7 @@ void main(void) {
     platform_init();
     music_init();
     video_init();
+    if (video_error) video_fail();
     scene_init();
     demo_reset();
     previous = clock_ticks();
@@ -130,9 +131,7 @@ void main(void) {
                 ++demo_loops;
                 demo_reset();
             } else {
-#asm
-                halt
-#endasm
+                video_idle(); /* Missing IRQ must not trap the whiteout hold. */
                 continue;
             }
         }
@@ -155,8 +154,6 @@ void main(void) {
             demo_hold();
         }
     }
-    /* A timed-out device produces a visible red border instead of hanging. */
-    video_reg(7, 14);
-    for (;;) {
-    }
+    /* Stop safely with a diagnostic border instead of waiting forever. */
+    video_fail();
 }

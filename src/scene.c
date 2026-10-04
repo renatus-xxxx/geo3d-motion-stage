@@ -3,8 +3,7 @@
 #include "motion_data.h"
 #include <arch/z80.h>
 #include <string.h>
-__sfr __at(0x9d) geo_index;
-__sfr __at(0x9f) geo_data;
+
 unsigned int selected_bank;
 static int matrix[9], distance;
 static int visible_bounds[6], focus[3];
@@ -20,18 +19,17 @@ static int qmul(int a, int b) {
     return (int)(((long)a * b) >> 14);
 }
 static void word(int v) {
-    geo_data = v;
-    geo_data = v >> 8;
+    geo_write_word(v);
 }
 static void reg(unsigned char r, unsigned char v) {
-    geo_index = r;
-    geo_data = v;
+    geo_write_index(r);
+    geo_write_byte(v);
 }
 static void stream(const unsigned char *p, unsigned int size) {
     unsigned char n;
     while (size) {
         n = size > 255 ? 255 : size;
-        z80_otir(p, 0x9f, n);
+        z80_otir(p, geo_data_port, n);
         p += n;
         size -= n;
     }
@@ -40,7 +38,7 @@ static void wait_geo(void) {
     unsigned int budget = 65535;
     unsigned char blocks = platform_r800 ? 4 : 1;
     if (video_error) return;
-    while (geo_index & 1) {
+    while (geo_status() & 1) {
         if (!--budget) {
             if (--blocks) { budget = 65535; continue; }
             video_error = 3;
@@ -52,7 +50,7 @@ static void wait_geo(void) {
 static void run(unsigned char nv, unsigned char nf) {
     reg(0x42, nv);
     reg(0x59, nf);
-    geo_index = 0x46;
+    geo_write_index(0x46);
     word(video_draw_y());
     video_wait();
     reg(0x48, 3);
@@ -105,13 +103,13 @@ static void setup_camera(void) {
         if (need > d) d = need;
     }
     distance = (int)((long)(d + 12) * camera_zoom / 100);
-    geo_index = 0;
+    geo_write_index(0);
     for (i = 0; i < 9; i++)
         word(matrix[i]);
     for (i = 0; i < 3; i++)
         word(-qmul(matrix[i * 3], focus[0]) - qmul(matrix[i * 3 + 1], focus[1]) -
              qmul(matrix[i * 3 + 2], focus[2]) + (i == 2 ? distance : 0));
-    geo_index = 0x18;
+    geo_write_index(0x18);
     word(SCREEN_FOCAL);
     word(SCREEN_WIDTH / 2);
     word(SCREEN_HEIGHT / 2);
@@ -165,7 +163,7 @@ static void include_bounds(unsigned char first) {
 #endif
 }
 static void light(unsigned char mode) {
-    geo_index = 0x5a;
+    geo_write_index(0x5a);
     if (mode) {
         word(0);
         word(0);
@@ -227,7 +225,7 @@ static void draw_pose(unsigned char mirror) {
     f = face_buffer + actor * 792;
 #endif
     reg(0x40, 0);
-    geo_index = 0x50;
+    geo_write_index(0x50);
     if (!mirror)
         stream(v, (unsigned int)nv * 6);
     else
@@ -241,7 +239,7 @@ static void draw_pose(unsigned char mirror) {
             word(z);
         }
     reg(0x58, 0);
-    geo_index = 0x52;
+    geo_write_index(0x52);
     if (!mirror && !actor_mode)
         stream(f, (unsigned int)nf * 11);
     else
@@ -253,14 +251,14 @@ static void draw_pose(unsigned char mirror) {
             nx = *(const int *)(f + 4);
             ny = *(const int *)(f + 6);
             nz = *(const int *)(f + 8);
-            geo_data = a;
-            geo_data = mirror ? c : b;
-            geo_data = mirror ? b : c;
-            geo_data = mirror ? b : d;
+            geo_write_byte(a);
+            geo_write_byte(mirror ? c : b);
+            geo_write_byte(mirror ? b : c);
+            geo_write_byte(mirror ? b : d);
             word(nx);
             word(mirror ? -ny : ny);
             word(nz);
-            geo_data = mirror ? 12 : 1;
+            geo_write_byte(mirror ? 12 : 1);
             f += 11;
         }
     light(mirror);
@@ -272,21 +270,21 @@ static void draw_trace(unsigned char color) {
     /* Each five-vertex part begins with its two bone endpoints. Past poses
      * use these lines, avoiding another filled-mesh pass for every ghost. */
     reg(0x40, 0);
-    geo_index = 0x50;
+    geo_write_index(0x50);
     for (i = 0; i < edges; i++) {
         stream(v, 12);
         v += 30;
     }
     reg(0x41, 0);
-    geo_index = 0x51;
+    geo_write_index(0x51);
     for (i = 0; i < edges; i++) {
-        geo_data = i * 2;
-        geo_data = i * 2 + 1;
+        geo_write_byte(i * 2);
+        geo_write_byte(i * 2 + 1);
     }
     reg(0x42, edges * 2);
     reg(0x43, edges);
     reg(0x44, color);
-    geo_index = 0x46;
+    geo_write_index(0x46);
     word(video_draw_y());
     video_wait();
     reg(0x48, 1);
@@ -316,10 +314,10 @@ static void floor_draw(void) {
             face[k++] = 10 + ((x + z) & 1);
         }
     reg(0x40, 0);
-    geo_index = 0x50;
+    geo_write_index(0x50);
     stream((unsigned char *)v, 150);
     reg(0x58, 0);
-    geo_index = 0x52;
+    geo_write_index(0x52);
     stream(face, 176);
     light(1);
     run(25, 16);

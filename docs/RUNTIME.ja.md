@@ -49,4 +49,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\setup-runtime.ps1 -Emu
 
 ## 容量の選択
 
-起動batに 2m を指定すると MOTION2.ROM と標準ASCII16を選びます。省略時は MOTION8.ROM とASCII16-Xです。例：un-msx2plus-cbios.bat 2m。nativeの2 MiB版は MOT2N.ROM です。2 MiB版の自動マッパー判別は検証用openMSXで起動せず、ASCII16を明示してください。SX-2では対応ESE-MegaRAMをローダーで選び、V9968 + geo3dも必要です。実機は未検証です。
+起動batに 2m を指定すると MOTION2.ROM と標準ASCII16を選びます。省略時は MOTION8.ROM とASCII16-Xです。例：run-msx2plus-cbios.bat 2m。nativeの2 MiB版は MOT2N.ROM です。2 MiB版の自動マッパー判別は検証用openMSXで起動せず、ASCII16を明示してください。SX-2では対応ESE-MegaRAMをローダーで選び、V9968 + geo3dも必要です。実機は未検証です。
+
+
+## 外部V9968の利用
+
+外部構成にはエミュレータの HRA_V9968 と geo3d88 拡張も必要です。run-turbor.bat 8m external または run-msx2plus-cbios.bat 2m external で拡張を接続し、映像ソースV9968を表示します。同じROMが外部を自動検出します。[詳しい仕様](VDP.ja.md)。

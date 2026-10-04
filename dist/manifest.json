@@ -1,99 +1,99 @@
 {
-    "project":  "geo3d-motion-stage",
-    "roms":  [
-                 {
-                     "file":  "MOTION8.ROM",
-                     "bytes":  8388608,
-                     "mapper":  "ASCII16-X",
-                     "pose_hz":  20,
-                     "normal_bits":  16,
-                     "fil":  "R21 bit6",
-                     "minimum_ram_bytes":  65536,
-                     "vram_bytes":  262144
-                 },
-                 {
-                     "file":  "MOT8N.ROM",
-                     "bytes":  8388608,
-                     "mapper":  "ASCII16-X",
-                     "pose_hz":  20,
-                     "normal_bits":  16,
-                     "fil":  "R20 bit5",
-                     "minimum_ram_bytes":  65536,
-                     "vram_bytes":  262144
-                 },
-                 {
-                     "file":  "MOTION2.ROM",
-                     "bytes":  2097152,
-                     "mapper":  "ASCII16",
-                     "pose_hz":  10,
-                     "normal_bits":  16,
-                     "fil":  "R21 bit6",
-                     "minimum_ram_bytes":  65536,
-                     "vram_bytes":  262144
-                 },
-                 {
-                     "file":  "MOT2N.ROM",
-                     "bytes":  2097152,
-                     "mapper":  "ASCII16",
-                     "pose_hz":  10,
-                     "normal_bits":  16,
-                     "fil":  "R20 bit5",
-                     "minimum_ram_bytes":  65536,
-                     "vram_bytes":  262144
-                 }
-             ],
-    "display":  "SCREEN 7 FIL, 512x424, 16 colors",
-    "video_hz":  60,
-    "required_extension":  "V9968 + geo3d",
-    "default_mode":  "automatic looping demo",
-    "bvh_source":  "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
-    "bvh_credit":  "Perfume global site project #001",
-    "bvh_use_basis":  "fan-created derivative demo following the official project description",
-    "validation":  {
-                       "openmsx":  "See VERIFICATION.md for current results",
-                       "native":  "Build verified; current ROM runtime and physical FPGA unverified",
-                       "sx2":  "Standard ASCII16 format; physical SX-2 and loader unverified"
-                   },
-    "files":  [
-                  {
-                      "file":  "MOTION8.ROM",
-                      "bytes":  8388608,
-                      "sha256":  "de19b53ff95d4d223b58aaaa49e2686da96bb0ee7156048557ad8c15ac6e651f"
-                  },
-                  {
-                      "file":  "MOT8N.ROM",
-                      "bytes":  8388608,
-                      "sha256":  "d9428d4daa65d08f87d8607ae75898bea1e9f814a985aee461952059c216e726"
-                  },
-                  {
-                      "file":  "MOTION2.ROM",
-                      "bytes":  2097152,
-                      "sha256":  "dbc49b47ab4ad0a868b48a4efd860308741958521045ee7ca2cbd7191e9c08f2"
-                  },
-                  {
-                      "file":  "MOT2N.ROM",
-                      "bytes":  2097152,
-                      "sha256":  "16dc99148096ea0719e484950b7c4307d098188dce1ddcc73f09d360f7c9d59a"
-                  },
-                  {
-                      "file":  "motion-stage-demo.mp4",
-                      "bytes":  3376319,
-                      "sha256":  "52999096db9628a0b19988b6e037097063422dbeb5c107d6e7e7c7ef62df13cf"
-                  },
-                  {
-                      "file":  "comparison-r800.mp4",
-                      "bytes":  3543484,
-                      "sha256":  "a86d32c01d2075c79e051e32c4fe5fa34e88fdc884e15e2a778e14350cca3fb7"
-                  },
-                  {
-                      "file":  "comparison-z80.mp4",
-                      "bytes":  2590727,
-                      "sha256":  "5e2baeb625df2cb7351036e8bc0cc0c0f09d6e06dddfaeda10af8bcc405d8e93"
-                  },
-                  {
-                      "file":  "NOTICE.txt",
-                      "bytes":  1135,
-                      "sha256":  "6597d5e96927a5eeed7dec3a29a301b4c6cd757413cbca2c457d85eebe4ce0ad"
-                  }
-              ]
+  "project": "geo3d-motion-stage",
+  "roms": [
+    {
+      "file": "MOTION8.ROM",
+      "bytes": 8388608,
+      "mapper": "ASCII16-X",
+      "pose_hz": 20,
+      "normal_bits": 16,
+      "fil": "R21 bit6",
+      "minimum_ram_bytes": 65536,
+      "vram_bytes": 262144
+    },
+    {
+      "file": "MOT8N.ROM",
+      "bytes": 8388608,
+      "mapper": "ASCII16-X",
+      "pose_hz": 20,
+      "normal_bits": 16,
+      "fil": "R20 bit5",
+      "minimum_ram_bytes": 65536,
+      "vram_bytes": 262144
+    },
+    {
+      "file": "MOTION2.ROM",
+      "bytes": 2097152,
+      "mapper": "ASCII16",
+      "pose_hz": 10,
+      "normal_bits": 16,
+      "fil": "R21 bit6",
+      "minimum_ram_bytes": 65536,
+      "vram_bytes": 262144
+    },
+    {
+      "file": "MOT2N.ROM",
+      "bytes": 2097152,
+      "mapper": "ASCII16",
+      "pose_hz": 10,
+      "normal_bits": 16,
+      "fil": "R20 bit5",
+      "minimum_ram_bytes": 65536,
+      "vram_bytes": 262144
+    }
+  ],
+  "display": "SCREEN 7 FIL, 512x424, 16 colors",
+  "video_hz": 60,
+  "required_extension": "V9968 + geo3d",
+  "default_mode": "automatic looping demo",
+  "bvh_source": "https://perfume-global.com/web/2012/03/perfume-global-site-project-001/",
+  "bvh_credit": "Perfume global site project #001",
+  "bvh_use_basis": "fan-created derivative demo following the official project description",
+  "validation": {
+    "openmsx": "See VERIFICATION.md for current results",
+    "native": "Build verified; current ROM runtime and physical FPGA unverified",
+    "sx2": "Standard ASCII16 format; physical SX-2 and loader unverified"
+  },
+  "files": [
+    {
+      "file": "MOTION8.ROM",
+      "bytes": 8388608,
+      "sha256": "594c27ffc53e069f1718dd903c61ad067d794ede7a5cc96876caa543650d358a"
+    },
+    {
+      "file": "MOT8N.ROM",
+      "bytes": 8388608,
+      "sha256": "163e69a50816ee5beded32ca28207aec8895ac4740d84123d59174c8f140450e"
+    },
+    {
+      "file": "MOTION2.ROM",
+      "bytes": 2097152,
+      "sha256": "8a1b590b4f3044dd1c5ccec3ac5a088dec8bb76c9f00e6c056a9acf14ae8dcab"
+    },
+    {
+      "file": "MOT2N.ROM",
+      "bytes": 2097152,
+      "sha256": "25ff090ee622df5c2ca3fafc9791f8b85a14ccd24bbfc40e4fb1e6b67d0f8d70"
+    },
+    {
+      "file": "motion-stage-demo.mp4",
+      "bytes": 3376319,
+      "sha256": "52999096db9628a0b19988b6e037097063422dbeb5c107d6e7e7c7ef62df13cf"
+    },
+    {
+      "file": "comparison-r800.mp4",
+      "bytes": 3543484,
+      "sha256": "a86d32c01d2075c79e051e32c4fe5fa34e88fdc884e15e2a778e14350cca3fb7"
+    },
+    {
+      "file": "comparison-z80.mp4",
+      "bytes": 2590727,
+      "sha256": "5e2baeb625df2cb7351036e8bc0cc0c0f09d6e06dddfaeda10af8bcc405d8e93"
+    },
+    {
+      "file": "NOTICE.txt",
+      "bytes": 1261,
+      "sha256": "96d37253dcb18e62a30a7cd846792d4bb040d4b81a34b183276cd5f326c1d53a"
+    }
+  ]
 }
