@@ -9,7 +9,7 @@ The same ROM selects an external V9968 first, otherwise the BIOS/main V9968. It 
 `src/device.c` adapts the algorithm in [HRA!'s official check_vdp_type.asm](https://github.com/hra1129/V9968_Cartridge/blob/dceec5a50c7c2a5d107a0c6ce8d10cf232e43474/fpga/V9968_Cartridge_TangNano20K/src/v9968/detect/check_vdp_type.asm). See the scoped [MIT notice](../licenses/MIT-VDP-DETECT.txt).
 
 1. Disable CPU interrupts. BIOS page 0 remains mapped. Check that BIOS bytes 0006h/0007h agree and that the BIOS generation is MSX2 or later. Disable the main VDP's vertical/horizontal interrupt enables.
-2. Read S1; clear R21.FID (bit 0) and read S1 again. Extract `(S1 >> 1) & 31`; V9968 is 3. Restore the status selector to S0. R21 is intentionally changed; the selected device is subsequently initialized. The BIOS R21 shadow is not changed by this application.
+2. Write 00h to port4 (main 9Ch / external 8Ch), matching the working Night Raven demo, to unlock R20/R21. Then read S1; clear R21.FID (bit 0) and read S1 again. Extract `(S1 >> 1) & 31`; V9968 is 3. Restore the status selector to S0. R21 is intentionally changed; the selected device is subsequently initialized. The BIOS R21 shadow is not changed by this application.
 3. Unless the BIOS already points to the 88h block (version-up adapter), read external control port 89h twice, as in the official sample. Two reads with bit 7 set mean absent. Otherwise run the same S1/FID test.
 4. Prefer external ID 3. Derive all VDP/geo3d ports from the selected control port.
 5. Read/write/read geo3d COLOR register 44h using 55h and AAh, then restore its old value. This validates register readback without executing geometry. If external V9968 has no geo3d, stop there; do not silently switch to a different display.
@@ -22,6 +22,7 @@ The official sample warns that machines without data-bus pull-ups may misidentif
 | VDP control / status | 99h | 89h |
 | Palette | 9Ah | 8Ah |
 | Indirect command registers | 9Bh | 8Bh |
+| port4 / extended-register lock | 9Ch | 8Ch |
 | geo3d index / status | 9Dh | 8Dh |
 | geo3d data | 9Fh | 8Fh |
 
@@ -57,3 +58,5 @@ tools\verify-devices.ps1 -Case lost-irq-hold
 ```
 
 `verify-devices.ps1` deliberately disables an emulated VDP interrupt for the last two fault tests. It never edits game progression to force a pass. See [verification](../VERIFICATION.md) for current ROM hashes and results. FPGA, SX-2 and current native FIL runtime remain unverified.
+
+Reference: [Night Raven initialization](https://github.com/kanon-ai/V9968_Geo3D_SampleDemo/blob/main/demos/night-raven/src/player.asm).

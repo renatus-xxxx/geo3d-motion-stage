@@ -58,22 +58,22 @@
     {
       "file": "MOTION8.ROM",
       "bytes": 8388608,
-      "sha256": "594c27ffc53e069f1718dd903c61ad067d794ede7a5cc96876caa543650d358a"
+      "sha256": "ed3b6a0b885e405cbe9a41b93a6e0fbd8d833a18ad28804c0be91babb7e08c06"
     },
     {
       "file": "MOT8N.ROM",
       "bytes": 8388608,
-      "sha256": "163e69a50816ee5beded32ca28207aec8895ac4740d84123d59174c8f140450e"
+      "sha256": "8fc8449a233c4cfdc7f500f5586dbd8606bd0039da699ba181323c4c4405370c"
     },
     {
       "file": "MOTION2.ROM",
       "bytes": 2097152,
-      "sha256": "8a1b590b4f3044dd1c5ccec3ac5a088dec8bb76c9f00e6c056a9acf14ae8dcab"
+      "sha256": "36ee57762e52119b32752b1793ea1170a4adcce78934eb32fc927b68a8435cec"
     },
     {
       "file": "MOT2N.ROM",
       "bytes": 2097152,
-      "sha256": "25ff090ee622df5c2ca3fafc9791f8b85a14ccd24bbfc40e4fb1e6b67d0f8d70"
+      "sha256": "da1a70d17dcb0bfd4eba9f18fb4238d7a11beefc273cddac3c5c5eab2f9d29eb"
     },
     {
       "file": "motion-stage-demo.mp4",

@@ -2,6 +2,19 @@
 
 # 検証結果
 
+## port4修正版（2026-10-05）
+
+R21による検出前にport4へ00hを書き、R20／R21のロックを解除します。本体9Ch・外部8Chを対象とし、動作実績のあるNight Ravenと同じ初期化順序です。4 ROMを再ビルド・配布更新しました。コード増加は13バイト、32768バイト以降のモーションデータは旧版と一致します。
+
+従来FIL版のR800／Z80・8 MiB／2 MiB・内蔵／外部の8構成で、各150秒（エミュレータ時間）の描画・操作・デモ完走・ホワイトアウト・自動再開始がPASS。ログはローカルoutput/verify-*-port4/events.txt。native FIL版はビルド確認のみ、FPGA実機での修正効果は未確認です。以前の操作・リセット・故障・長時間検証は下記の旧ハッシュに対する結果で、このROMへ引き継ぎません。
+
+| ROM | SHA-256 |
+|---|---|
+| MOTION8.ROM | `ed3b6a0b885e405cbe9a41b93a6e0fbd8d833a18ad28804c0be91babb7e08c06` |
+| MOT8N.ROM | `8fc8449a233c4cfdc7f500f5586dbd8606bd0039da699ba181323c4c4405370c` |
+| MOTION2.ROM | `36ee57762e52119b32752b1793ea1170a4adcce78934eb32fc927b68a8435cec` |
+| MOT2N.ROM | `da1a70d17dcb0bfd4eba9f18fb4238d7a11beefc273cddac3c5c5eab2f9d29eb` |
+
 ## 内蔵・外部VDP対応版（2026-10-05）
 
 WindowsのV9968 + geo3d対応openMSX 21.0-unknownで検証。エミュレータのSHA-256は `140c7a8cdbffda42488e7cf8fedcc2fd735a01bc68ac891d93f8b96db337c7bd`。GTはFS-A1GT BIOS／R800 DRAM／512 KiB RAM、CBはC-BIOS 0.29 MSX2+ JP／Z80／64 KiB RAMです。BASICコマンド・ディスク・セーブ状態は使用していません。

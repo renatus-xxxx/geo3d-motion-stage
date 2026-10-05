@@ -51,6 +51,9 @@ static unsigned char probe(unsigned char port, unsigned char external) {
         first = z80_inp(port);
         if ((first & 128) && (z80_inp(port) & 128)) return 255;
     }
+    /* Match working FPGA demos: port4 bit 7 = 0 unlocks R20/R21.
+     * Do this before the R21-based ID probe (99h -> 9Ch, 89h -> 8Ch). */
+    z80_outp(port + 3, 0);
     raw_reg(port, 15, 1);
     id = (z80_inp(port) >> 1) & 31;
     if (id) {

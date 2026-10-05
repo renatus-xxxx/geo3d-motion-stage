@@ -2,6 +2,19 @@
 
 # Verification results
 
+## port4 correction (2026-10-05)
+
+Write 00h to port4 before the R21 detection step to unlock R20/R21, matching the working Night Raven initialization. Main uses 9Ch; external uses 8Ch. All four distributed ROMs were rebuilt. Code grows by 13 bytes; motion data from byte 32768 onward matches the prior release.
+
+All eight compatibility-FIL combinations (R800/Z80, 8/2 MiB, internal/external) passed 150 emulated seconds of rendering, input, a natural demo ending, whiteout and automatic restart. Local logs: output/verify-*-port4/events.txt. Native FIL is build-verified only; the fix is not yet verified on physical FPGA hardware. Earlier dedicated controls/reset, fault and long-run results below belong to the previous hashes, not these ROMs.
+
+| ROM | SHA-256 |
+|---|---|
+| MOTION8.ROM | `ed3b6a0b885e405cbe9a41b93a6e0fbd8d833a18ad28804c0be91babb7e08c06` |
+| MOT8N.ROM | `8fc8449a233c4cfdc7f500f5586dbd8606bd0039da699ba181323c4c4405370c` |
+| MOTION2.ROM | `36ee57762e52119b32752b1793ea1170a4adcce78934eb32fc927b68a8435cec` |
+| MOT2N.ROM | `da1a70d17dcb0bfd4eba9f18fb4238d7a11beefc273cddac3c5c5eab2f9d29eb` |
+
 ## Internal/external VDP release (2026-10-05)
 
 Windows V9968 + geo3d openMSX 21.0-unknown; emulator SHA-256 `140c7a8cdbffda42488e7cf8fedcc2fd735a01bc68ac891d93f8b96db337c7bd`. GT uses FS-A1GT BIOS / R800 DRAM / 512 KiB RAM. CB uses C-BIOS 0.29 MSX2+ JP / Z80 / 64 KiB RAM. No BASIC command, disk or saved state is used.
@@ -15,7 +28,7 @@ All four ROMs built with Windows z88dk. Capacity, motion data, normals, FIL sett
 | MOTION2.ROM | 2097152 | `8a1b590b4f3044dd1c5ccec3ac5a088dec8bb76c9f00e6c056a9acf14ae8dcab` |
 | MOT2N.ROM | 2097152 | `25ff090ee622df5c2ca3fafc9791f8b85a14ccd24bbfc40e4fb1e6b67d0f8d70` |
 
-## Current-ROM regression
+## Previous-ROM regression
 
 Each demo run lasts 150 emulated seconds. Actual keyboard events exercise actor selection, trails/reflection and camera extremes; vertex projection and floor near clipping are checked, followed by a natural whiteout and automatic restart. Controls runs separately check movement-related camera input, pause, mute/phase, ending, Esc/D and reset cold boot. Main V9968 and external V9968 coexist in external rows, proving external priority. The VDP and geo3d selected ports are checked at startup.
 
