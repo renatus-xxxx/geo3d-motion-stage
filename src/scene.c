@@ -1,7 +1,9 @@
 #include "stage.h"
 #define MOTION_DEFINE_TOPOLOGY
 #include "motion_data.h"
+#ifndef MOTION_NATIVE
 #include <arch/z80.h>
+#endif
 #include <string.h>
 
 unsigned int selected_bank;
@@ -9,6 +11,13 @@ static int matrix[9], distance;
 static int visible_bounds[6], focus[3];
 static const unsigned char *pose;
 static unsigned int loaded_pose;
+#ifdef MOTION_NATIVE
+/* ROM words are little-endian and face records can be unaligned. */
+static int pose_word(const unsigned char *p) {return (int16_t)((uint16_t)p[0]|((uint16_t)p[1]<<8));}
+#define POSE_WORD(p) pose_word(p)
+#else
+#define POSE_WORD(p) (*(const int16_t *)(p))
+#endif
 static int qmul(int a, int b) {
     if (!a || !b)
         return 0;
@@ -29,7 +38,7 @@ static void stream(const unsigned char *p, unsigned int size) {
     unsigned char n;
     while (size) {
         n = size > 255 ? 255 : size;
-        z80_otir(p, geo_data_port, n);
+        geo3d_stream(p,n);
         p += n;
         size -= n;
     }
@@ -123,19 +132,25 @@ static void load_pose(unsigned int frame) {
     loaded_pose = stored;
     /* ASCII16-X: upper bank bits are address bits 8..11; low bits are data.
      * All executing code, BSS, stack and BIOS IRQ remain outside page 1. */
+#ifndef MOTION_NATIVE
 #ifdef ROM_ASCII16
     *(volatile unsigned char *)0x6000 = (unsigned char)bank;
 #else
     *(volatile unsigned char *)(0x6000 | (bank & 0x0f00)) = (unsigned char)bank;
 #endif
+#endif
     selected_bank = bank;
     /* Keep this bank pinned until drawing completes: stream straight from
      * ROM. The interrupt handler never changes cartridge banks. */
+#ifdef MOTION_NATIVE
+    pose=motion_bank(bank)+(stored%POSES_PER_BANK)*FRAME_BYTES;
+#else
     pose = (const unsigned char *)(0x4000 + (stored % POSES_PER_BANK) * FRAME_BYTES);
+#endif
 }
 static void include_bounds(unsigned char first) {
 #ifndef MOTION_SCAN_BOUNDS
-    const int *bounds = (const int *)(pose + BOUNDS_OFFSET + actor_mode * 12);
+    const int16_t *bounds = (const int16_t *)(pose + BOUNDS_OFFSET + actor_mode * 12);
     unsigned char axis;
     for (axis = 0; axis < 3; ++axis) {
         if (first || bounds[axis] < visible_bounds[axis])
@@ -144,7 +159,7 @@ static void include_bounds(unsigned char first) {
             visible_bounds[axis + 3] = bounds[axis + 3];
     }
 #else
-    const int *v = (const int *)(pose + (actor_mode ? (actor_mode - 1) * 360 : 0));
+    const int16_t *v = (const int16_t *)(pose + (actor_mode ? (actor_mode - 1) * 360 : 0));
     unsigned char i, j, count = actor_mode ? 60 : 180;
     int n;
     if (first)
@@ -230,9 +245,9 @@ static void draw_pose(unsigned char mirror) {
         stream(v, (unsigned int)nv * 6);
     else
         for (i = 0; i < nv; i++) {
-            x = *(const int *)v;
-            y = *(const int *)(v + 2);
-            z = *(const int *)(v + 4);
+            x = POSE_WORD(v);
+            y = POSE_WORD(v + 2);
+            z = POSE_WORD(v + 4);
             v += 6;
             word(x);
             word(2 * FLOOR_Y - y);
@@ -248,9 +263,9 @@ static void draw_pose(unsigned char mirror) {
             b = f[1] - actor * 60;
             c = f[2] - actor * 60;
             d = f[3] - actor * 60;
-            nx = *(const int *)(f + 4);
-            ny = *(const int *)(f + 6);
-            nz = *(const int *)(f + 8);
+            nx = POSE_WORD(f + 4);
+            ny = POSE_WORD(f + 6);
+            nz = POSE_WORD(f + 8);
             geo_write_byte(a);
             geo_write_byte(mirror ? c : b);
             geo_write_byte(mirror ? b : c);
@@ -291,7 +306,7 @@ static void draw_trace(unsigned char color) {
     wait_geo();
 }
 static void floor_draw(void) {
-    int v[75];
+    int16_t v[75];
     unsigned char face[176];
     unsigned char x, z, i = 0, k = 0, a;
     video_floor(SCREEN_HEIGHT / 2 +

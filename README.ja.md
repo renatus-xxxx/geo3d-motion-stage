@@ -107,3 +107,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\build-rom.ps1 -Profile
 初期版PDFのデータ形式は、今回追加した事前計算の境界情報と2 MiB形式を含みません。現在のサイズとコードはDESIGNを参照してください。
 
 機種定義の[MOTIONGT.xml](tools/machines/MOTIONGT.xml)と[MOTIONCB.xml](tools/machines/MOTIONCB.xml)だけに、元資料の[GPL-2.0](licenses/GPL-2.0.txt)表記を維持しています。アプリの新規コードやBVHにこの表記を適用せず、プロジェクト全体のMIT/GPLライセンスは表明していません。
+
+実験的なlibv9968の共通化・PC版は[単独PCアプリ](NATIVE.ja.md)を参照してください。
+
+PC版でも、MSXと同じ曲のコードを使い、オプションPSGモジュールとOpenAL SoftでBGMを再生します。[PC版のビルド・音声導入](NATIVE.ja.md)を参照してください。

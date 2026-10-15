@@ -1,7 +1,11 @@
 #include "stage.h"
+#ifndef MOTION_NATIVE
 __sfr __at(0xa0) psg_address;
 __sfr __at(0xa1) psg_write;
 __sfr __at(0xa2) psg_read;
+#else
+#include "psg.h"
+#endif
 volatile unsigned char music_enabled = 1, music_restart;
 volatile unsigned int music_ticks;
 /* Original eight-second loop: 120 BPM, eighth-note steps, PSG only.
@@ -16,12 +20,19 @@ static unsigned char volume(unsigned char level) {
     return level > fade ? level - fade : 0;
 }
 static void write_psg(unsigned char reg, unsigned char value) {
-    psg_address = reg;
-    psg_write = value;
+
+#ifdef MOTION_NATIVE
+    psg_write(reg,value);
+#else
+    psg_address = reg; psg_write = value;
+#endif
 }
 void music_init(void) {
-    psg_address = 7;
-    io_direction = psg_read & 0xc0; /* Preserve joystick / I/O directions. */
+#ifdef MOTION_NATIVE
+    psg_select(7); io_direction = psg_read() & 0xc0;
+#else
+    psg_address = 7; io_direction = psg_read & 0xc0;
+#endif
     write_psg(7, io_direction | 0x38);
     write_psg(8, 0);
     write_psg(9, 0);

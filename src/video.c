@@ -1,9 +1,13 @@
 #include "stage.h"
+#ifndef MOTION_NATIVE
 #include <arch/z80.h>
+#endif
 static unsigned char interrupt_ready;
 
+#ifndef MOTION_NATIVE
 __sfr __at(0xaa) ppi_select;
 __sfr __at(0xa9) ppi_keys;
+#endif
 unsigned char video_error, back_page;
 unsigned int displayed_frames;
 static void fill(unsigned int y, unsigned int height, unsigned char color);
@@ -11,8 +15,10 @@ volatile unsigned int vblank_ticks;
 /* Own IM2 handler: acknowledge VBlank and increment a clock using only
  * saved registers. The PSG sequencer also runs at VBlank. No BIOS services run while ROM data banks
  * are selected. */
+#ifndef MOTION_NATIVE
 static void interrupt_handler(void) __naked {
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  push af
  push hl
@@ -59,14 +65,17 @@ motion_irq_end:
  ei
  reti
 #endasm
+#endif
     // clang-format on
 }
 static void install_interrupt(void) {
     unsigned int i, address = (unsigned int)interrupt_handler;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  di
 #endasm
+#endif
         // clang-format on
         for (i = 0; i < 257; i++) *
         ((unsigned char *)0xe000 + i) = 0xe1;
@@ -75,14 +84,19 @@ static void install_interrupt(void) {
     vblank_ticks = 0;
     interrupt_ready = 1;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  ld a,0xe0
  ld i,a
  im 2
  ei
 #endasm
+#endif
     // clang-format on
 }
+#else
+static void install_interrupt(void) {vblank_ticks=0;interrupt_ready=1;}
+#endif
 static unsigned char packet[11];
 static const unsigned char palette[16][3] = {
     {1, 2, 4},    {3, 7, 10},   {5, 11, 15}, {8, 15, 19}, {12, 19, 22}, {17, 23, 26},
@@ -90,37 +104,44 @@ static const unsigned char palette[16][3] = {
     {3, 10, 12},  {4, 12, 15},  {31, 6, 4},  {20, 26, 31}};
 void video_reg(unsigned char r, unsigned char v) {
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  di
 #endasm
+#endif
         // clang-format on
-        z80_outp(video_control_port, v);
-    z80_outp(video_control_port, r | 128);
+        v9968_reg(r,v);
     // clang-format off
     if (interrupt_ready) {
+#ifndef MOTION_NATIVE
 #asm
  ei
 #endasm
+#endif
     }
     // clang-format on
 }
 static unsigned char status(unsigned char r) {
     unsigned char result;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  di
 #endasm
+#endif
         // clang-format on
-        z80_outp(video_control_port, r);
-    z80_outp(video_control_port, 143);
-    result = z80_inp(video_control_port);
-    z80_outp(video_control_port, 0);
-    z80_outp(video_control_port, 143);
+        v9968_out(video_control_port, r);
+    v9968_out(video_control_port, 143);
+    result = v9968_in(video_control_port);
+    v9968_out(video_control_port, 0);
+    v9968_out(video_control_port, 143);
     // clang-format off
     if (interrupt_ready) {
+#ifndef MOTION_NATIVE
 #asm
  ei
 #endasm
+#endif
     }
         // clang-format on
         return result;
@@ -128,24 +149,33 @@ static unsigned char status(unsigned char r) {
 unsigned int clock_ticks(void) {
     unsigned int t;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  di
 #endasm
+#endif
         // clang-format on
         t = vblank_ticks;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  ei
 #endasm
+#endif
         // clang-format on
         return t;
 }
 unsigned char keyboard_row(unsigned char row) {
+#ifdef MOTION_NATIVE
+    extern unsigned char pc_keyboard_row(unsigned char row);
+    return pc_keyboard_row(row);
+#else
     unsigned char save = ppi_select, k;
     ppi_select = (save & 240) | row;
     k = ppi_keys;
     ppi_select = save;
     return k;
+#endif
 }
 void video_wait(void) {
     unsigned int budget = 65535;
@@ -193,7 +223,7 @@ void video_init(void) {
     video_reg(16, 0);
     for (i = 0; i < 16; i++)
         for (j = 0; j < 3; j++)
-            z80_outp(video_palette_port, palette[i][j]);
+            v9968_out(video_palette_port, palette[i][j]);
     back_page = 1;
     video_clear();
     video_wait();
@@ -227,7 +257,7 @@ static void fill(unsigned int y, unsigned int height, unsigned char color) {
         packet[8] = color;
         packet[10] = 0xc0;
         video_reg(17, 36);
-        z80_otir(packet, video_command_port, 11);
+        v9968_stream(video_command_port,packet,11);
     }
 }
 void video_clear(void) {
@@ -251,9 +281,12 @@ void video_white(unsigned char level) {
     video_reg(16, 0);
     for (i = 0; i < 16; i++)
         for (j = 0; j < 3; j++)
-            z80_outp(video_palette_port, palette[i][j] + (unsigned int)(31 - palette[i][j]) * level / 31);
+            v9968_out(video_palette_port, palette[i][j] + (unsigned int)(31 - palette[i][j]) * level / 31);
 }
 void video_idle(void) {
+#ifdef MOTION_NATIVE
+    return;
+#else
     unsigned int t, budget = 65535;
     unsigned char blocks = platform_r800 ? 4 : 1;
     if (video_error)
@@ -266,6 +299,7 @@ void video_idle(void) {
             return;
         }
     }
+#endif /* native idle */
 }
 void video_flip(void) {
     video_wait();
@@ -285,7 +319,7 @@ void video_flip(void) {
             copy[1] = half;
             copy[5] = half;
             video_reg(17, 32);
-            z80_otir(copy, video_command_port, 15);
+            v9968_stream(video_command_port,copy,15);
         }
     }
 #endif

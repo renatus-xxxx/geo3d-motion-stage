@@ -1,5 +1,14 @@
 #ifndef STAGE_H
 #define STAGE_H
+#ifdef MOTION_NATIVE
+#define __z88dk_fastcall
+const unsigned char *motion_bank(unsigned int bank);
+#endif
+#include "../lib/libv9968/geo3d.h"
+#define geo_write_index geo3d_index
+#define geo_write_byte geo3d_byte
+#define geo_write_word geo3d_word
+#define geo_status geo3d_status
 #define SCREEN_WIDTH 512
 #define SCREEN_HEIGHT 424
 #define SCREEN_FOCAL 320
@@ -9,10 +18,10 @@ extern unsigned char video_control_port, video_palette_port, video_command_port;
 extern unsigned char geo_index_port, geo_data_port, video_external, video_type;
 void video_detect(void);
 void video_fail(void);
-void geo_write_index(unsigned char value) __z88dk_fastcall;
-void geo_write_byte(unsigned char value) __z88dk_fastcall;
-void geo_write_word(int value) __z88dk_fastcall;
-unsigned char geo_status(void);
+
+
+
+
 extern unsigned int displayed_frames, motion_frame, selected_bank;
 extern volatile unsigned char paused;
 extern unsigned char trails, reflection, actor_mode;

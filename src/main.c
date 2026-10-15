@@ -24,7 +24,7 @@ void controls_poll(void) {
     pending_keys |= keys & ~held_keys;
     held_keys = keys;
 }
-static void controls(unsigned int elapsed) {
+void controls(unsigned int elapsed) {
     unsigned char row6 = keyboard_row(6), row8 = keyboard_row(8), pressed;
     int step = elapsed / 4, value;
     if (step < 1)
@@ -32,16 +32,20 @@ static void controls(unsigned int elapsed) {
     if (step > 12)
         step = 12;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  di
 #endasm
+#endif
         // clang-format on
         pressed = pending_keys;
     pending_keys = 0;
     // clang-format off
+#ifndef MOTION_NATIVE
 #asm
  ei
 #endasm
+#endif
         // clang-format on
     /* D is a fresh demo; visual controls enter manual mode without a jump. */
     if (pressed & 128) {
@@ -57,15 +61,19 @@ static void controls(unsigned int elapsed) {
     if (pressed & 4)
         actor_mode = (actor_mode + 1) & 3;
     if ((pressed & 64) && demo_wait != 2) {
+#ifndef MOTION_NATIVE
 #asm
         di
 #endasm
+#endif
         playback_ticks = MOTION_FRAMES * 3 - 30; /* E also resumes a paused ending. */
         paused = 0;
         demo_wait = 0;
+#ifndef MOTION_NATIVE
 #asm
         ei
 #endasm
+#endif
     }
     if (pressed & 32)
         music_enabled ^= 1;
@@ -111,6 +119,7 @@ static void controls(unsigned int elapsed) {
         camera_pitch = value;
     }
 }
+#ifndef MOTION_NATIVE
 void main(void) {
     unsigned int previous, now, elapsed, t;
     platform_init();
@@ -157,3 +166,5 @@ void main(void) {
     /* Stop safely with a diagnostic border instead of waiting forever. */
     video_fail();
 }
+
+#endif

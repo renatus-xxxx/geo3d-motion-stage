@@ -23,55 +23,71 @@ void demo_tick(void) {
 
 unsigned int demo_time(void) {
     unsigned int t;
+#ifndef MOTION_NATIVE
 #asm
     di
 #endasm
+#endif
     t = playback_ticks;
+#ifndef MOTION_NATIVE
 #asm
     ei
 #endasm
+#endif
     return t;
 }
 
 void demo_reset(void) {
+#ifndef MOTION_NATIVE
 #asm
     di
 #endasm
+#endif
     demo_wait = 2;
     playback_ticks = demo_hold_ticks = 0;
     music_fade = 31;
     music_restart = 1;
     paused = 0;
+#ifndef MOTION_NATIVE
 #asm
     ei
 #endasm
+#endif
     trails = reflection = actor_mode = 0;
     camera_reset();
     scene_reset();
 }
 
 void demo_start(void) {
+#ifndef MOTION_NATIVE
 #asm
     di
 #endasm
+#endif
     playback_ticks = 0;
     music_fade = 0;
     music_restart = 1;
     demo_wait = 0;
+#ifndef MOTION_NATIVE
 #asm
     ei
 #endasm
+#endif
 }
 
 void demo_hold(void) {
+#ifndef MOTION_NATIVE
 #asm
     di
 #endasm
+#endif
     demo_hold_ticks = 0;
     demo_wait = 1;
+#ifndef MOTION_NATIVE
 #asm
     ei
 #endasm
+#endif
 }
 
 /* Absolute states catch up in one step even after several missed events.

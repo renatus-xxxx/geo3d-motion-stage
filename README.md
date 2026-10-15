@@ -107,3 +107,7 @@ The use basis follows the official description of fan-created works using the mo
 The original PDF guide describes the initial release's data layout. The current layout adds baked bounds and a separate 2 MiB profile; use DESIGN for current sizes and code.
 
 The two machine definitions, [MOTIONGT.xml](tools/machines/MOTIONGT.xml) and [MOTIONCB.xml](tools/machines/MOTIONCB.xml), retain their upstream [GPL-2.0](licenses/GPL-2.0.txt) notices. Those notices apply to these configuration files, not the new application code or BVH data. No project-wide MIT/GPL license is asserted.
+
+See [native application and shared graphics](NATIVE.md) for the experimental libv9968 integration.
+
+Native PC BGM is available through the optional PSG module and OpenAL Soft, using the same music code as MSX. See [native build/audio setup](NATIVE.md).
